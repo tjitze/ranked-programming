@@ -4,10 +4,14 @@
 (require racket/format)
 (require srfi/1)
 (require "rp-core.rkt")
-
+  
 (provide
+ ranking?
+ rank?
+ ranking/c
+ rank/c
  construct-ranking
- nrm
+ nrm/exc
  failure
  either-of
  either
@@ -35,15 +39,23 @@
 ; and any other value to ranking chain representing single-valued ranking function
 (define autocast
   (lambda (value)
-    (if (is-rf? value)
+    (if (ranking? value)
         (force (cdr value))
         (element (delay value) 0 terminate-promise))))
 
 ; is value a ranking function?
-(define (is-rf? value) (and (pair? value) (eq? (car value) rf-marker)))
+(define (ranking? value) (and (pair? value) (eq? (car value) rf-marker)))
+
+; ranking contract
+(define ranking/c
+  (flat-named-contract 'ranking/c ranking?))
 
 ; is value a rank?
 (define (rank? x) (or (exact-nonnegative-integer? x) (infinite? x)))
+
+; rank contract
+(define rank/c
+  (flat-named-contract 'rank/c rank?))
 
 ; is value a one-argument function? ()
 (define (one-arg-proc? proc) (and (procedure? proc) (procedure-arity-includes? proc 1)))
@@ -66,12 +78,12 @@
        (construct-from-assoc `(a ...)))))))
 
 ; nrm/exc
-(define-syntax nrm
-  (syntax-rules (exc)
-    ((nrm r-exp1 exc rank r-exp2) (nrm r-exp1 rank r-exp2))
-    ((nrm r-exp1 rank r-exp2)
+(define-syntax nrm/exc
+  (syntax-rules ()
+    ((nrm/exc r-exp1 r-exp2) (nrm/exc r-exp1 r-exp2 1))
+    ((nrm/exc r-exp1 r-exp2 rank)
      (begin
-       (unless (rank? rank) (raise-argument-error 'nrm "rank (non-negative integer or infinity)" 1 r-exp1 rank r-exp2))
+       (unless (rank? rank) (raise-argument-error 'nrm/exc "rank (non-negative integer or infinity)" 1 r-exp1 rank r-exp2))
        (mark-as-rf
         (dedup
          (normalise
@@ -102,20 +114,19 @@
     ((either* r-exp rest ...) (merge (delay (autocast r-exp)) (either* rest ...)))))
 
 ; observe
-(define-syntax observe
-  (syntax-rules ()
-    ((observe pred r-exp)
-     (begin
-       (unless (one-arg-proc? pred) (raise-argument-error 'observe "predicate" 0 pred r-exp))
-       (mark-as-rf (normalise (filter-ranking pred (delay (autocast r-exp)))))))))
+(define (observe pred r)
+  (begin
+    (unless (one-arg-proc? pred) (raise-argument-error 'observe "predicate" 0 pred r))
+    (mark-as-rf (normalise (filter-ranking pred (delay (autocast r)))))))
 
 ; observe-l
 (define (observe-l pred rank r-exp) 
   (unless (one-arg-proc? pred) (raise-argument-error 'observe-l "predicate" 0 pred rank r-exp))
   (unless (rank? rank) (raise-argument-error 'observe-l "rank (non-negative integer or infinity)" 1 pred rank r-exp))
-  (nrm (observe pred r-exp) 
-       exc rank
-       (observe (neg pred) r-exp)))
+  (nrm/exc
+   (observe pred r-exp) 
+   (observe (neg pred) r-exp)
+   rank))
 
 ; observe-j
 (define (observe-j pred rank r-exp)
@@ -125,12 +136,13 @@
          (rank-pred (rank-of pred rf))
          (rank-not-pred (rank-of (neg pred) rf)))
     (if (<= rank-pred rank)
-        (nrm (observe pred rf)
-             (+ (- rank rank-pred) rank-not-pred)
-             (observe (neg pred) rf))
-        (nrm (observe (neg pred) rf)
-             (- rank-pred rank)
-             (observe pred rf)))))
+        (nrm/exc (observe pred rf)
+             (observe (neg pred) rf)
+             (+ (- rank rank-pred) rank-not-pred))
+        (nrm/exc
+         (observe (neg pred) rf)
+         (observe pred rf)
+         (- rank-pred rank)))))
 
 ; cut
 (define (cut rank r-exp)
@@ -153,7 +165,7 @@
 ; @ (ranked application)
 (define (@ . r-exps)
   (if (> (length r-exps) 0)
-      (if (is-rf? (car r-exps))
+      (if (ranking? (car r-exps))
           ; function argument is ranking over functions
           (mark-as-rf
            (dedup

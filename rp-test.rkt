@@ -12,15 +12,15 @@
   
   (test-case
    "nrm/exc"
-   (check-rf-equal? (nrm 1 1 2)
+   (check-rf-equal? (nrm/exc 1 2 1)
                     (construct-ranking (1 . 0) (2 . 1)))
-   (check-rf-equal? (nrm 1 2 2)
+   (check-rf-equal? (nrm/exc 1 2 2)
                     (construct-ranking (1 . 0) (2 . 2)))
-   (check-rf-equal? (nrm 1 1 1)
+   (check-rf-equal? (nrm/exc 1 1 1)
                     (construct-ranking (1 . 0)))
-   (check-rf-equal? (nrm 1 1 (nrm 2 1 3))
+   (check-rf-equal? (nrm/exc 1 (nrm/exc 2 3 1) 1)
                     (construct-ranking (1 . 0) (2 . 1) (3 . 2)))
-   (check-rf-equal? (nrm (nrm 10 5 20) 1 2)
+   (check-rf-equal? (nrm/exc (nrm/exc 10 20 5) 2 1)
                     (construct-ranking (10 . 0) (2 . 1) (20 . 5))))
   
   (test-case
@@ -38,7 +38,7 @@
                     (construct-ranking (1 . 0)))
    (check-rf-equal? (either 1 2)
                     (construct-ranking (1 . 0) (2 . 0)))
-   (check-rf-equal? (either (nrm 1 1 2) (nrm 10 10 20))
+   (check-rf-equal? (either (nrm/exc 1 2 1) (nrm/exc 10 20 10))
                     (construct-ranking (1 . 0) (10 . 0) (2 . 1) (20 . 10))))
   
   (test-case
@@ -94,33 +94,33 @@
    "@"
    (check-rf-equal? (@ + 10 5)
                     (construct-ranking (15 . 0)))
-   (check-rf-equal? (@ (nrm + 1 -) 10 5)
+   (check-rf-equal? (@ (nrm/exc + - 1) 10 5)
                     (construct-ranking (15 . 0) (5 . 1)))
-   (check-rf-equal? (@ + (nrm 10 1 20) 5)
+   (check-rf-equal? (@ + (nrm/exc 10 20 1) 5)
                     (construct-ranking (15 . 0) (25 . 1)))
-   (check-rf-equal? (@ + (nrm 10 1 20) (nrm 5 2 50))
+   (check-rf-equal? (@ + (nrm/exc 10 20 1) (nrm/exc 5 50 2))
                     (construct-ranking (15 . 0) (25 . 1) (60 . 2) (70 . 3)))
-   (check-rf-equal? (@ (nrm + 1 -) (nrm 10 1 20) (nrm 5 2 50))
+   (check-rf-equal? (@ (nrm/exc + - 1) (nrm/exc 10 20 1) (nrm/exc 5 50 2))
                     (construct-ranking (15 . 0) (25 . 1) (5 . 1) (60 . 2) (15 . 2) (70 . 3) (-40 . 3) (-30 . 4)))
-   (check-rf-equal? (@ + (nrm 10 1 20) (nrm 5 2 (nrm 50 2 500)))
+   (check-rf-equal? (@ + (nrm/exc 10 20 1) (nrm/exc 5 (nrm/exc 50 500 2) 2))
                     (construct-ranking (15 . 0) (25 . 1) (60 . 2) (70 . 3) (510 . 4) (520 . 5))))
   
   (test-case
    "rlet"
-   (check-rf-equal? (rlet ((x (nrm 1 1 2))) x)
+   (check-rf-equal? (rlet ((x (nrm/exc 1 1 2))) x)
                     (construct-ranking (1 . 0) (2 . 1)))
-   (check-rf-equal? (rlet ((x (nrm 1 1 2)) (y (nrm 10 2 20))) (list x y))
+   (check-rf-equal? (rlet ((x (nrm/exc 1 1 2)) (y (nrm/exc 10 2 20))) (list x y))
                     (construct-ranking ((1 10) . 0) ((2 10) . 1) ((1 20) . 2) ((2 20) . 3)))
-   (check-rf-equal? (rlet ((x (nrm 1 1 2)) (y (failure))) (list x y))
+   (check-rf-equal? (rlet ((x (nrm/exc 1 1 2)) (y (failure))) (list x y))
                     (failure)))
 
   (test-case
    "rlet*"
-   (check-rf-equal? (rlet* ((x (nrm 1 1 2))) x)
+   (check-rf-equal? (rlet* ((x (nrm/exc 1 1 2))) x)
                     (construct-ranking (1 . 0) (2 . 1)))
-   (check-rf-equal? (rlet* ((x (nrm #F 1 #T)) (y (if x (nrm 1 1 2) 0))) (list x y))
+   (check-rf-equal? (rlet* ((x (nrm/exc #F 1 #T)) (y (if x (nrm/exc 1 1 2) 0))) (list x y))
                     (construct-ranking ((#F 0) . 0) ((#T 1) . 1) ((#T 2) . 2)))
-   (check-rf-equal? (rlet* ((x (nrm 1 1 2)) (y (failure))) (list x y))
+   (check-rf-equal? (rlet* ((x (nrm/exc 1 1 2)) (y (failure))) (list x y))
                     (failure)))
   
   (test-case
