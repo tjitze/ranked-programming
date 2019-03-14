@@ -19,9 +19,6 @@
 ; return successor ranking element stored (as element-promise) in given ranking element
 (define successor (lambda (x) (force (caddr x))))
 
-; Rerurn negation of given predicate
-(define (neg pred) (λ (x) (not (pred x))))
-
 ; Create new ranking element with given value-promise, rank and successor-promise
 (define (element value-promise rank successor-promise)
   (list value-promise rank successor-promise))

@@ -120,12 +120,12 @@
     (mark-as-rf (normalise (filter-ranking pred (delay (autocast r)))))))
 
 ; observe-l
-(define (observe-l pred rank r-exp) 
-  (unless (one-arg-proc? pred) (raise-argument-error 'observe-l "predicate" 0 pred rank r-exp))
-  (unless (rank? rank) (raise-argument-error 'observe-l "rank (non-negative integer or infinity)" 1 pred rank r-exp))
+(define (observe-l pred rank r) 
+  (unless (one-arg-proc? pred) (raise-argument-error 'observe-l "predicate" 0 pred rank r))
+  (unless (rank? rank) (raise-argument-error 'observe-l "rank (non-negative integer or infinity)" 1 pred rank r))
   (nrm/exc
-   (observe pred r-exp) 
-   (observe (neg pred) r-exp)
+   (observe pred r) 
+   (observe (compose not pred) r)
    rank))
 
 ; observe-j
@@ -133,14 +133,14 @@
   (unless (one-arg-proc? pred) (raise-argument-error 'observe-j "predicate" 0 pred rank r))
   (unless (rank? rank) (raise-argument-error 'observe-j "rank (non-negative integer or infinity)" 1 pred rank r))
   (let* ((rank-pred (rank-of pred r))
-         (rank-not-pred (rank-of (neg pred) r)))
+         (rank-not-pred (rank-of (compose not pred) r)))
     (if (<= rank-pred rank)
         (nrm/exc
          (observe pred r)
-         (observe (neg pred) r)
+         (observe (compose not pred) r)
          (+ (- rank rank-pred) rank-not-pred))
         (nrm/exc
-         (observe (neg pred) r)
+         (observe (compose not pred) r)
          (observe pred r)
          (- rank-pred rank)))))
 
