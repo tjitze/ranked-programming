@@ -17,7 +17,7 @@
  either
  observe
  observe-l
- ;observe-j
+ observe-j
  cut
  rank-of
  @
@@ -129,19 +129,19 @@
    rank))
 
 ; observe-j
-(define (observe-j pred rank r-exp)
-  (unless (one-arg-proc? pred) (raise-argument-error 'observe-j "predicate" 0 pred rank r-exp))
-  (unless (rank? rank) (raise-argument-error 'observe-j "rank (non-negative integer or infinity)" 1 pred rank r-exp))
-  (let* ((rf (delay (autocast r-exp)))
-         (rank-pred (rank-of pred rf))
-         (rank-not-pred (rank-of (neg pred) rf)))
+(define (observe-j pred rank r)
+  (unless (one-arg-proc? pred) (raise-argument-error 'observe-j "predicate" 0 pred rank r))
+  (unless (rank? rank) (raise-argument-error 'observe-j "rank (non-negative integer or infinity)" 1 pred rank r))
+  (let* ((rank-pred (rank-of pred r))
+         (rank-not-pred (rank-of (neg pred) r)))
     (if (<= rank-pred rank)
-        (nrm/exc (observe pred rf)
-             (observe (neg pred) rf)
-             (+ (- rank rank-pred) rank-not-pred))
         (nrm/exc
-         (observe (neg pred) rf)
-         (observe pred rf)
+         (observe pred r)
+         (observe (neg pred) r)
+         (+ (- rank rank-pred) rank-not-pred))
+        (nrm/exc
+         (observe (neg pred) r)
+         (observe pred r)
          (- rank-pred rank)))))
 
 ; cut
