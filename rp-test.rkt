@@ -107,20 +107,20 @@
   
   (test-case
    "rlet"
-   (check-rf-equal? (rlet ((x (nrm/exc 1 1 2))) x)
+   (check-rf-equal? (rlet ((x (nrm/exc 1 2 1))) x)
                     (construct-ranking (1 . 0) (2 . 1)))
-   (check-rf-equal? (rlet ((x (nrm/exc 1 1 2)) (y (nrm/exc 10 2 20))) (list x y))
+   (check-rf-equal? (rlet ((x (nrm/exc 1 2 1)) (y (nrm/exc 10 20 2))) (list x y))
                     (construct-ranking ((1 10) . 0) ((2 10) . 1) ((1 20) . 2) ((2 20) . 3)))
-   (check-rf-equal? (rlet ((x (nrm/exc 1 1 2)) (y (failure))) (list x y))
+   (check-rf-equal? (rlet ((x (nrm/exc 1 2 1)) (y (failure))) (list x y))
                     (failure)))
 
   (test-case
    "rlet*"
-   (check-rf-equal? (rlet* ((x (nrm/exc 1 1 2))) x)
+   (check-rf-equal? (rlet* ((x (nrm/exc 1 2 1))) x)
                     (construct-ranking (1 . 0) (2 . 1)))
-   (check-rf-equal? (rlet* ((x (nrm/exc #F 1 #T)) (y (if x (nrm/exc 1 1 2) 0))) (list x y))
+   (check-rf-equal? (rlet* ((x (nrm/exc #F #T 1)) (y (if x (nrm/exc 1 2 1) 0))) (list x y))
                     (construct-ranking ((#F 0) . 0) ((#T 1) . 1) ((#T 2) . 2)))
-   (check-rf-equal? (rlet* ((x (nrm/exc 1 1 2)) (y (failure))) (list x y))
+   (check-rf-equal? (rlet* ((x (nrm/exc 1 2 1)) (y (failure))) (list x y))
                     (failure)))
   
   (test-case
