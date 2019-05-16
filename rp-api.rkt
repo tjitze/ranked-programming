@@ -20,7 +20,7 @@
  observe-j
  cut
  rank-of
- @
+ ra
  rlet
  rlet*
  rf-equal?
@@ -69,7 +69,7 @@
 ; failure (returns empty ranking)
 (define (failure) terminate-rf)
 
-; construct ranking from associative pairs, e.g. (construct-ranking ("normal" . 0) ("exceptional" . 1))
+; construct ranking from associative pairs, e.g. (construct-ranking ("x" . 0) ("y" . 1))
 (define-syntax construct-ranking 
   (syntax-rules ()
     ((construct-ranking a ...)
@@ -162,8 +162,8 @@
                         (rank-of* (successor-promise res))))))))
     (rank-of* (delay (autocast r-exp)))))
 
-; @ (ranked application)
-(define (@ . r-exps)
+; ra (ranked application)
+(define (ra . r-exps)
   (if (> (length r-exps) 0)
       (if (ranking? (car r-exps))
           ; function argument is ranking over functions
@@ -189,20 +189,20 @@
                   (λ (args) (delay (autocast (apply (car r-exps) args))))
                   (dedup (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps)))))
                  (λ (rf) rf))))))
-      (raise-arity-error '@ (arity-at-least 1))))
+      (raise-arity-error 'ra (arity-at-least 1))))
 
 ; ranked let
 (define-syntax rlet
   (syntax-rules ()
     ((rlet ((var r-exp) ...) body ...)
-      (@ (λ (var ...) body ...) r-exp ...))))
+      (ra (λ (var ...) body ...) r-exp ...))))
 
 ; ranked let*
 (define-syntax rlet*
   (syntax-rules ()
     ((rlet* () body) body) ; base case
     ((rlet* ((var r-exp) rest ...) body) ; binding case
-      (@ (λ (var) (rlet* (rest ...) body)) r-exp))))
+      (ra (λ (var) (rlet* (rest ...) body)) r-exp))))
 
 ; returns true if two ranking functions are equal (disregards ordering of values with equal rank and redundant elements)
 (define (rf-equal? r-exp1 r-exp2)

@@ -1,6 +1,7 @@
 #lang racket
 
-(require "main.rkt")
+;(require "main.rkt")
+(require "rp-api.rkt")
 
 (module+ test
 
@@ -91,18 +92,18 @@
    (check-true (infinite? (rank-of (lambda (x) #F) (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3))))))
   
   (test-case
-   "@"
-   (check-rf-equal? (@ + 10 5)
+   "ra"
+   (check-rf-equal? (ra + 10 5)
                     (construct-ranking (15 . 0)))
-   (check-rf-equal? (@ (nrm/exc + - 1) 10 5)
+   (check-rf-equal? (ra (nrm/exc + - 1) 10 5)
                     (construct-ranking (15 . 0) (5 . 1)))
-   (check-rf-equal? (@ + (nrm/exc 10 20 1) 5)
+   (check-rf-equal? (ra + (nrm/exc 10 20 1) 5)
                     (construct-ranking (15 . 0) (25 . 1)))
-   (check-rf-equal? (@ + (nrm/exc 10 20 1) (nrm/exc 5 50 2))
+   (check-rf-equal? (ra + (nrm/exc 10 20 1) (nrm/exc 5 50 2))
                     (construct-ranking (15 . 0) (25 . 1) (60 . 2) (70 . 3)))
-   (check-rf-equal? (@ (nrm/exc + - 1) (nrm/exc 10 20 1) (nrm/exc 5 50 2))
+   (check-rf-equal? (ra (nrm/exc + - 1) (nrm/exc 10 20 1) (nrm/exc 5 50 2))
                     (construct-ranking (15 . 0) (25 . 1) (5 . 1) (60 . 2) (15 . 2) (70 . 3) (-40 . 3) (-30 . 4)))
-   (check-rf-equal? (@ + (nrm/exc 10 20 1) (nrm/exc 5 (nrm/exc 50 500 2) 2))
+   (check-rf-equal? (ra + (nrm/exc 10 20 1) (nrm/exc 5 (nrm/exc 50 500 2) 2))
                     (construct-ranking (15 . 0) (25 . 1) (60 . 2) (70 . 3) (510 . 4) (520 . 5))))
   
   (test-case
