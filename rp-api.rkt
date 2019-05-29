@@ -20,7 +20,7 @@
  observe-j
  cut
  rank-of
- ra
+ $
  rlet
  rlet*
  rf-equal?
@@ -30,7 +30,8 @@
  pr-all
  pr-until
  pr-first
- pr)
+ pr
+ !)
 
 ; used as marker for ranking function (only for internal use)
 (define rf-marker `ranking-function)
@@ -77,9 +78,21 @@
       (check-correctness
        (construct-from-assoc `(a ...)))))))
 
-; nrm/exc
+; truth
+(define !
+  (lambda (value)
+    (mark-as-rf
+     (element (delay value) 0 terminate-promise))))
+
+; nrm (syntax from paper)
+(define-syntax nrm
+  (syntax-rules (exc)
+    ((nrm r-exp1 exc rank r-exp2) (nrm/exc r-exp1 r-exp2 rank))
+    ((nrm r-exp1 exc r-exp2) (nrm/exc r-exp1 r-exp2 1))))
+
+; nrm (alternative syntax)
 (define-syntax nrm/exc
-  (syntax-rules ()
+  (syntax-rules (nrm exc)
     ((nrm/exc r-exp1 r-exp2) (nrm/exc r-exp1 r-exp2 1))
     ((nrm/exc r-exp1 r-exp2 rank)
      (begin
@@ -104,8 +117,12 @@
 
 ; either
 (define-syntax either
-  (syntax-rules ()
+  (syntax-rules (or)
     ((either) (mark-as-rf terminate-promise))
+    ((either r-exp1 or r-exp2) (either r-exp1 r-exp2))
+    ((either r-exp1 or r-exp2 or r-exp3) (either r-exp1 r-exp2 r-exp3))
+    ((either r-exp1 or r-exp2 or r-exp3 or r-exp4) (either r-exp1 r-exp2 r-exp3 r-exp4))
+    ((either r-exp1 or r-exp2 or r-exp3 or r-exp4 or r-exp5) (either r-exp1 r-exp2 r-exp3 r-exp4 r-exp5))
     ((either r-exp rest ...) (mark-as-rf (dedup (merge (delay (autocast r-exp)) (either* rest ...)))))))
 
 (define-syntax either*
@@ -162,8 +179,8 @@
                         (rank-of* (successor-promise res))))))))
     (rank-of* (delay (autocast r-exp)))))
 
-; ra (ranked application)
-(define (ra . r-exps)
+; $ (ranked application)
+(define ($ . r-exps)
   (if (> (length r-exps) 0)
       (if (ranking? (car r-exps))
           ; function argument is ranking over functions
@@ -189,20 +206,20 @@
                   (λ (args) (delay (autocast (apply (car r-exps) args))))
                   (dedup (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps)))))
                  (λ (rf) rf))))))
-      (raise-arity-error 'ra (arity-at-least 1))))
+      (raise-arity-error '$ (arity-at-least 1))))
 
 ; ranked let
 (define-syntax rlet
   (syntax-rules ()
     ((rlet ((var r-exp) ...) body ...)
-      (ra (λ (var ...) body ...) r-exp ...))))
+      ($ (λ (var ...) body ...) r-exp ...))))
 
 ; ranked let*
 (define-syntax rlet*
   (syntax-rules ()
     ((rlet* () body) body) ; base case
     ((rlet* ((var r-exp) rest ...) body) ; binding case
-      (ra (λ (var) (rlet* (rest ...) body)) r-exp))))
+      ($ (λ (var) (rlet* (rest ...) body)) r-exp))))
 
 ; returns true if two ranking functions are equal (disregards ordering of values with equal rank and redundant elements)
 (define (rf-equal? r-exp1 r-exp2)
