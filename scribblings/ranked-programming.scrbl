@@ -256,12 +256,12 @@ we observe that the value that is returned is higher than 500.
 ]
 }
 
-@defproc[(ra [k_1 any/c] ... [k_n any/c])
+@defproc[($ [k_1 any/c] ... [k_n any/c])
          ranking?]{
 
 Returns the result of applying the procedure @racket[k_1] to the arguments @racket[k_2 ... k_n].                                             
 
-The precise rule that is used to construct the ranking returned by the expression @racket[(ra k_1 ... k_n)] is as follows:
+The precise rule that is used to construct the ranking returned by the expression @racket[($ k_1 ... k_n)] is as follows:
 Suppose that the rankings @racket[k_1 ... k_n] assign ranks @racket[r_1 ... r_n] to the values @racket[v_1 ... v_n].
 Furthermore suppose that the standard procedure call @racket[(v_1 ... v_n)] returns @racket[v].
 Then @racket[v] is returned with rank @racket[r_1]+...+@racket[r_n],
@@ -273,11 +273,11 @@ If an argument for a parameter @racket[k_1 ... k_n] is not a ranking,
 This is demonstrated by the following example.
 
 Consider the procedure call @racket[(+ 5 10)].
-The ranked version of this is @racket[(ra + 5 10)]:
+The ranked version of this is @racket[($ + 5 10)]:
 
 @examples[ #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(pr (ra + 5 10))
+(pr ($ + 5 10))
 ]
 
 Now suppose we are uncertain about the argument @racket[10]:
@@ -286,14 +286,14 @@ To express this we replace @racket[10] with @racket[(nrm/exc 10 20)]:
 
 @examples[ #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(pr (ra + 5 (nrm/exc 10 20)))
+(pr ($ + 5 (nrm/exc 10 20)))
 ]
 
 Now we add uncertainty about the operation: we normally add but exceptionally multiply:
 
 @examples[ #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(pr (ra (nrm/exc + *) 5 (nrm/exc 10 20)))
+(pr ($ (nrm/exc + *) 5 (nrm/exc 10 20)))
 ]
 }
 
