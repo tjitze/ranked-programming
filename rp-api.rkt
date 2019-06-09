@@ -11,6 +11,7 @@
  ranking/c
  rank/c
  construct-ranking
+ nrm
  nrm/exc
  failure
  either-of
