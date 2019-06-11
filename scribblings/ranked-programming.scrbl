@@ -159,7 +159,7 @@ Note that the rank with which @racket["baz"] is returned is the sum of @racket[1
 
 @examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(pr (nrm/exc "foo" (nrm/exc "bar" exc 2 "baz") 1))
+(pr (nrm/exc "foo" (nrm/exc "bar" "baz" 2) 1))
 ]
 
 Both @racket[k_1] and @racket[k_2] are evaluated on an as-needed basis. This means that
