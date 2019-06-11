@@ -11,8 +11,8 @@
  ranking/c
  rank/c
  construct-ranking
- nrm
  nrm/exc
+ !
  failure
  either-of
  either
@@ -20,6 +20,7 @@
  observe-l
  observe-j
  cut
+ limit
  rank-of
  $
  rlet
@@ -32,7 +33,7 @@
  pr-until
  pr-first
  pr
- !)
+)
 
 ; used as marker for ranking function (only for internal use)
 (define rf-marker `ranking-function)
@@ -84,12 +85,6 @@
   (lambda (value)
     (mark-as-rf
      (element (delay value) 0 terminate-promise))))
-
-; nrm (syntax from paper)
-(define-syntax nrm
-  (syntax-rules (exc)
-    ((nrm r-exp1 exc rank r-exp2) (nrm/exc r-exp1 r-exp2 rank))
-    ((nrm r-exp1 exc r-exp2) (nrm/exc r-exp1 r-exp2 1))))
 
 ; nrm (alternative syntax)
 (define-syntax nrm/exc
@@ -166,6 +161,11 @@
 (define (cut rank r-exp)
   (unless (rank? rank) (raise-argument-error 'cut "rank (non-negative integer or infinity)" 0 rank r-exp))
   (mark-as-rf (up-to-rank rank (delay (autocast r-exp)))))
+
+; limit
+(define (limit count r-exp)
+  (unless (or (exact-nonnegative-integer? count) (infinite? count)) (raise-argument-error 'cut "non-negative integer" 0 rank r-exp))
+  (mark-as-rf (filter-after count (delay (autocast r-exp)))))
 
 ; rank-of
 (define (rank-of pred r-exp)
