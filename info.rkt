@@ -1,6 +1,7 @@
 #lang info
 (define collection "ranked-programming")
-(define deps '("scribble-lib"
+(define deps '("sandbox-lib"
+               "scribble-lib"
                "srfi-lite-lib"
                "base"))
 (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib"))
