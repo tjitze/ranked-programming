@@ -29,7 +29,8 @@ A quick-start guide can be found @(let ([url "https://github.com/tjitze/ranked-p
 This document contains a complete reference of the functionality provided by this library.
 
 Before using this reference, the reader should be familiar with the paper linked to above.
-There are a few minor differences between the language described in the paper and the language implemented here.
+There are a few minor differences between the language described in the paper and the language implemented here,
+  as well as a number of additional features not discussed in the paper.
 We list them here:
 
 @bold{Ranked Choice}
@@ -67,7 +68,7 @@ We list them here:
    @bold{However}, all expressions with parameters of type ranking are implemented
      so that these parameters also accept values of any other type.
    Such values are implicitly converted to rankings using @racket[!].
-   Therefore, the @racket[!] procedure is actually redundant, because we can simply write
+   Therefore, the @racket[!] procedure is actually redundant, because instead of @racket[(nrm/exc (! "foo") (! "bar") 1)] we can simply write
 
       @racket[(nrm/exc "foo" "bar" 1)]
 
@@ -82,9 +83,9 @@ We list them here:
    These rankings are represented by lazily-linked list data structures, as discussed in section 4 in the
      @(let ([url "https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf"])
      (link url "paper")).
-   In order to display a ranking, we need to provide it as an argument to one of the print functions provided by this library.
+   In order to display a ranking, we need to provide it as an argument to one of the print functions implemented by this library.
    The standard print function is @racket[pr]. 
-   Thus, instead of evaluating an expression such as @racket[(nrm/exc "foo" "bar" 1)] directly, we must evaluate it as follows.
+   Thus, instead of evaluating an expression like @racket[(nrm/exc "foo" "bar" 1)] directly, we must evaluate it as follows.
 
    @examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
@@ -105,7 +106,7 @@ We list them here:
    (rf->assoc (nrm/exc "foo" "bar"))
    ]
 
-@bold{Additional expression types}
+@bold{Additional functions and expression types}
 
    This library implements all functions and expression types discussed in the paper.
    These are the
@@ -128,8 +129,8 @@ We list them here:
      @item{@racket[rf->hash]/@racket[rf->assoc]/@racket[rf->stream] Convert ranking to other data structure.}
      @item{@racket[pr-all]/@racket[pr-first]/@racket[pr-until]/@racket[pr] Procedures for displaying a ranking.}
      @item{@racket[observe-l]/@racket[observe-j] Special @racket[observe] variants.}
-     @item{@racket[cut] Cut ranking up to a given rank.}
-     @item{@racket[limit] Cut ranking up to a given number of values.}
+     @item{@racket[cut] Restrict ranking up to a given rank.}
+     @item{@racket[limit] Restrict ranking up to a given number of values.}
      @item{@racket[rank?]/@racket[ranking?] Type checking for ranks and rankings.}
      @item{@racket[rank/c]/@racket[ranking/c] Type contracts for ranks and rankings.}
    ]
@@ -231,9 +232,10 @@ Constructs a ranking according to which @racket[v] is ranked 0 and anything else
 (pr (! 5))
 ]
 
-See also the discussion in the @secref{before_getting_started} section.
-
-}
+This function (called the @italic{Truth function} in the paper) is included for the sake of completeness
+but is actually redundant. This is because all expressions provided by this library with parameters of
+type ranking are implemented so that these parameters also accept values of any other type. Such values
+are implicitly converted to rankings using @racket[!]. See discussion in the introduction.}
 
 @defform[(construct-ranking (v_1 . r_1) ... (v_n . r_n))]{
 
@@ -396,8 +398,7 @@ Note that this expression refers to @racket[b],
 ]
 }
 
-@defproc[(rf-equal? [k_1 (ranking/c)] [k_2 (ranking/c)])
-         boolean?]{
+@defproc[(rf-equal? [k_1 (ranking/c)] [k_2 (ranking/c)]) boolean?]{
 Returns @racket[#t] if @racket[k_1] and @racket[k_2] are equivalent rankings, and @racket[#f] otherwise.
 Two rankings are equivalent if they assign the same rank to each finitely-ranked value.
 This means that the order in which values with the same rank are returned is irrelevant.
@@ -406,8 +407,7 @@ This procedure will not terminate if @racket[k_1] and @racket[k_2] are infinite 
   
 }
 
-@defproc[(rf->hash [k (ranking/c)])
-         hash?]{
+@defproc[(rf->hash [k (ranking/c)]) hash?]{
  Converts the ranking @racket[k] to a
   @(let ([url "https://docs.racket-lang.org/guide/hash-tables.html"])
    (link url "hash table")) that maps each finitely ranked value to its rank.
@@ -415,8 +415,7 @@ This procedure will not terminate if @racket[k_1] and @racket[k_2] are infinite 
    (i.e., assigns finite ranks to infinitely many values).
 }
 
-@defproc[(rf->assoc [k (ranking/c)])
-         list?]{
+@defproc[(rf->assoc [k (ranking/c)]) list?]{
  Converts the ranking @racket[k] to an association list,
    which is a list consisting of pairs @racket[(v . r)]
    for each finitely ranked value @racket[v] and rank @racket[r].
@@ -424,8 +423,7 @@ This procedure will not terminate if @racket[k_1] and @racket[k_2] are infinite 
  If @racket[k] is an infinite ranking (i.e., assigns finite ranks to infinitely many values) this function will not terminate.
 }
 
-@defproc[(rf->stream [k (ranking/c)])
-         stream?]{
+@defproc[(rf->stream [k (ranking/c)]) stream?]{
  Converts the ranking @racket[k] to a stream that generates pairs @racket[(value . rank)]
    for each finitely ranked value and its rank (see @racket[racket/stream]).
  These pairs are generated in non-decreasing order with respect to rank.
@@ -433,24 +431,20 @@ This procedure will not terminate if @racket[k_1] and @racket[k_2] are infinite 
  If @racket[k] is an infinite ranking (i.e., assigns finite ranks to infinitely many values) then this function returns an infinite stream.
 }
 
-@defproc[(pr-all [k (ranking/c)])
-         void?]{
+@defproc[(pr-all [k (ranking/c)]) void?]{
  Displays the complete ranking @racket[k] in tabular form and in non-decreasing order with respect to rank.
  If @racket[k] is an infinite ranking (i.e., assigns finite ranks to infinitely many values) this function will not terminate.
 }
 
-@defproc[(pr-first [n (natural-number/c)] [k (ranking/c)])
-         void?]{
+@defproc[(pr-first [n (natural-number/c)] [k (ranking/c)]) void?]{
   Like @racket[pr-all] but only displays the @racket[n] lowest-ranked values.
 }
 
-@defproc[(pr-until [rank (natural-number/c)] [k (ranking/c)])
-         void?]{
+@defproc[(pr-until [rank (natural-number/c)] [k (ranking/c)]) void?]{
   Like @racket[pr-all] but only displays values up to rank @racket[rank].
 }
 
-@defproc[(pr [k (ranking/c)])
-         void?]{
+@defproc[(pr [k (ranking/c)]) void?]{
   Displayes the 10 lowest-ranked values of the ranking @racket[k].
   Short for @racket[(pr-first 10 k)].
 }
@@ -465,24 +459,19 @@ Like @racket[observe] but implements the more general @italic{J-conditionalizati
 This operation is discussed @(let ([url "https://www.researchgate.net/profile/Moises_Goldszmidt/publication/221393230_Rank-based_Systems_A_Simple_Approach_to_Belief_Revision_Belief_Update_and_Reasoning_about_Evidence_and_Actions/links/546e06130cf29806ec2e6cda/Rank-based-Systems-A-Simple-Approach-to-Belief-Revision-Belief-Update-and-Reasoning-about-Evidence-and-Actions.pdf
 "]) (link url "here")).}
 
-@defproc[(cut [rank (rank?)] [k (ranking?)])
-         ranking?]{
-Returns the ranking @racket[k] except that values with a rank higher than @racket[rank] are discarded.
+@defproc[(cut [rank (rank?)] [k (ranking?)]) ranking?]{
+Returns the ranking @racket[k] restricted to values with a rank of at most @racket[rank].
 }
 
-@defproc[(limit [count (rank?)] [k (ranking?)])
-         ranking?]{
-Returns the ranking @racket[k] except that only the @racket[count] lowest-ranked values are passed on,
-  and any other value is discarded.                    
+@defproc[(limit [count (rank?)] [k (ranking?)]) ranking?]{
+Returns the ranking @racket[k] restricted to the @racket[count] lowest-ranked values.
 }
 
-@defproc[(rank? [x (any/c)])
-         boolean?]{
+@defproc[(rank? [x (any/c)]) boolean?]{
 Returns @racket[#t] if @racket[x] is a rank (a non-negative integer or infinity) and @racket[#f] otherwise.
 }
 
-@defproc[(ranking? [x (any/c)])
-         boolean?]{
+@defproc[(ranking? [x (any/c)]) boolean?]{
 Returns @racket[#t] if @racket[x] is a ranking and @racket[#f] otherwise.
 }
 

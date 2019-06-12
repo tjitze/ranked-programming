@@ -15,7 +15,7 @@
  !
  failure
  either-of
- either
+ either/or
  observe
  observe-l
  observe-j
@@ -111,15 +111,11 @@
               (delay (element (delay (car list)) 0 (either-of* (cdr list))))))))
     (mark-as-rf (dedup (either-of* lst)))))
 
-; either
-(define-syntax either
-  (syntax-rules (or)
-    ((either) (mark-as-rf terminate-promise))
-    ((either r-exp1 or r-exp2) (either r-exp1 r-exp2))
-    ((either r-exp1 or r-exp2 or r-exp3) (either r-exp1 r-exp2 r-exp3))
-    ((either r-exp1 or r-exp2 or r-exp3 or r-exp4) (either r-exp1 r-exp2 r-exp3 r-exp4))
-    ((either r-exp1 or r-exp2 or r-exp3 or r-exp4 or r-exp5) (either r-exp1 r-exp2 r-exp3 r-exp4 r-exp5))
-    ((either r-exp rest ...) (mark-as-rf (dedup (merge (delay (autocast r-exp)) (either* rest ...)))))))
+; either/or
+(define-syntax either/or
+  (syntax-rules ()
+    ((either/or) (mark-as-rf terminate-promise))
+    ((either/or r-exp rest ...) (mark-as-rf (dedup (merge (delay (autocast r-exp)) (either* rest ...)))))))
 
 (define-syntax either*
   (syntax-rules ()
