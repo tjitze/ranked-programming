@@ -139,14 +139,17 @@ We list them here:
 
 @section{Reference}
 
-@defform[(nrm/exc k_1 k_2 rank)
+@defform*[((nrm/exc k_1 k_2 rank) (nrm/exc k_1 k_2))
          #:contracts ([k_1 (any/c)] [k_2 (any/c)] [rank (rank?)])]{
 
-@italic{Normally} returns @racket[k_1] and @italic{exceptionally} (with degree of surprise @racket[rank]) @racket[k_2].
+@italic{Normally} returns the value captured by @racket[k_1] and @italic{exceptionally} (with degree of surprise @racket[rank])
+ the value captured by @racket[k_2].
+If @racket[rank] is omitted, it defaults to 1.
 
 @examples[ #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(pr (nrm/exc "foo" "bar" 1))
+(pr (nrm/exc "foo" "bar"))
+(pr (nrm/exc "foo" "bar" 2))
 ]
 
 If @racket[k_1] and @racket[k_2] are rankings then @racket[(nrm/exc k_1 k_2 rank)] returns a ranking
@@ -154,13 +157,9 @@ If @racket[k_1] and @racket[k_2] are rankings then @racket[(nrm/exc k_1 k_2 rank
   the rank of @racket[v] according to the ranking @racket[k_1],
   and the rank of @racket[v] according to the ranking @racket[k_2] @bold{plus the value of} @racket[rank].
 
-An example. The following expression normally returns @racket["foo"], and exceptionally (to degree @racket[1])
-  a value that is again uncertain: normally @racket["bar"] and exceptionally (to degree @racket[2]) @racket["baz"].
-Note that the rank with which @racket["baz"] is returned is the sum of @racket[1] and @racket[2].
-
 @examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(pr (nrm/exc "foo" (nrm/exc "bar" "baz" 2) 1))
+(pr (nrm/exc "foo" (nrm/exc "bar" "baz")))
 ]
 
 Both @racket[k_1] and @racket[k_2] are evaluated on an as-needed basis. This means that
@@ -170,28 +169,17 @@ This @italic{lazy evaluation} scheme avoids needless calculations and provides t
   to define potentially infinite rankings.
 
 Below is an example of an infinite ranking.
-The expression @racket[(recur x)] normally returns @racket[x] and exceptionally (to degree 1) @racket[(recur (* x 2))].
+The expression @racket[(recur x)] normally returns @racket[x] and exceptionally @racket[(recur (* x 2))].
 Even though @racket[recur] is infinitely recursive, it does return a ranking, which is due to the lazy evaluation.
 
 @examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(define (recur x) (nrm/exc x (recur (* x 2)) 1))
+(define (recur x) (nrm/exc x (recur (* x 2))))
 (pr (recur 1))
 ]
 }
-
-@defform[(nrm/exc k_1 k_2)
-         #:contracts ([k_1 (any/c)] [k_2 (any/c)])]{
-
-This is short for @racket[(nrm/exc k_1 k_2 1)].
-
-@examples[ #:eval ((make-eval-factory #:lang 'racket/base
-                             '(ranked-programming)))
-(pr (nrm/exc "foo" "bar"))
-]
-}
                                                           
-@defform[(either k_1 ... k_n)]{
+@defform[(either/or k_1 ... k_n)]{
 
 Returns a ranking according to which @racket[k_1 ... k_n] all equally surprising.
 
@@ -355,7 +343,7 @@ An example: let @racket[b] and @racket[p] be boolean variables standing for beer
 We only exceptionally drink beer, and thus @racket[b] becomes @racket[(nrm/exc #f #t)].
 Furthermore, we normally eat peanuts, and thus @racket[b] becomes @racket[(nrm/exc #t #f)].
 
-@examples[ #:eval ((make-eval-factory #:lang 'racket/base
+@examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
 (pr (rlet
      ((b (nrm/exc #f #t))
@@ -388,7 +376,7 @@ Thus, @racket[p] becomes @racket[(if b (nrm/exc #t #f) #f)].
 Note that this expression refers to @racket[b],
   which would not be allowed if we used @racket[rlet] instead of @racket[rlet*].
 
-@examples[ #:eval ((make-eval-factory #:lang 'racket/base
+@examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
 (pr (rlet* 
      ((b (nrm/exc #f #t))
