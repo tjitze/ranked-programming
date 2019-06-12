@@ -30,7 +30,7 @@ Note that the syntax used here differs from the syntax of the language described
 
 ## Interactive Evaluation of Expressions
 
-Apart from displaying the output of a program, the interactions panel can also be used to evaluate expressions interactively. This is useful for debugging purposes. It's also useful if we just want to experiment with the language. We can use the program we entered above as a starting point. Click *Run* and enter an expression (for example `(pr (nrm/exc "A" "B"))`) in the interactions panel.
+Apart from displaying the output of a program, the interactions panel can be used to evaluate expressions interactively. This is useful for debugging purposes. It's also useful if we just want to experiment with the language. We can use the program we entered above as a starting point. Click *Run* and enter an expression (for example `(pr (nrm/exc "A" "B"))`) in the interactions panel.
 
 <img src="https://github.com/tjitze/ranked-programming/blob/master/documentation/images/program_2.jpeg" width="500">
 
