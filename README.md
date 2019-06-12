@@ -32,7 +32,7 @@ The purpose of the definitions panel is to define your program. Let's give a sim
 starts by specifying its language. We use the Racket language, so we say `#lang racket`. 
 In addition, we must say that we `require` the package called `ranked-programming`. 
 We can then define our program. When we click *Run*, the output of our program is displayed in the interactions 
-window.
+panel.
 
 <img src="https://github.com/tjitze/ranked-programming/blob/master/documentation/images/program_1.jpeg" width="500">
 
