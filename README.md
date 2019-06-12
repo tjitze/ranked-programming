@@ -1,11 +1,12 @@
-# ranked-programming
-A Ranked Programming Extension for Racket
+# Ranked Programming
 
-Based on the paper "Ranked Programming" (Tjitze Rienstra) to appear at IJCAI 2019.
+This repository contains the `ranked-programming` package, which implements ranked programming functionality for the Racket programming language. For background and introduction please read the [paper](https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf) (to be presented at IJCAI 2019).
 
-Details coming soon.
+A complete language reference can be found [here](http://docs.racket-lang.org/ranked-programming@ranked-programming/index.html).
 
-# Quick Start
+In this document we provide some instructions to get started.
+
+# Getting Started
 
 ## Install Racket
 
