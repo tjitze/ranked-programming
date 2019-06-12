@@ -32,14 +32,16 @@
                     (failure)))
   
   (test-case
-   "either test"
-   (check-rf-equal? (either)
+   "either/or test"
+   (check-rf-equal? (either/or)
                     (failure))
-   (check-rf-equal? (either 1)
+   (check-rf-equal? (either/or 1)
                     (construct-ranking (1 . 0)))
-   (check-rf-equal? (either 1 2)
+   (check-rf-equal? (either/or 1 2)
                     (construct-ranking (1 . 0) (2 . 0)))
-   (check-rf-equal? (either (nrm/exc 1 2 1) (nrm/exc 10 20 10))
+   (check-rf-equal? (either/or 1 2 3)
+                    (construct-ranking (1 . 0) (2 . 0) (3 . 0)))
+   (check-rf-equal? (either/or (nrm/exc 1 2 1) (nrm/exc 10 20 10))
                     (construct-ranking (1 . 0) (10 . 0) (2 . 1) (20 . 10))))
   
   (test-case
