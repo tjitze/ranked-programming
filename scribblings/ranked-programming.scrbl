@@ -185,16 +185,16 @@ Returns a ranking according to which @racket[k_1 ... k_n] all equally surprising
 
 @examples[ #:label "Example:" #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(pr (nrm/exc "peter" (either "ann" "bob" "charlie")))
+(pr (nrm/exc "peter" (either/or "ann" "bob" "charlie")))
 ]
 
-If @racket[k_1 ... k_n] are rankings, then @racket[(either k_1 ... k_n)] returns a ranking
+If @racket[k_1 ... k_n] are rankings, then @racket[(either/or k_1 ... k_n)] returns a ranking
  according to which the rank of a value @racket[v] is the minimum among
   the ranks of @racket[v] according to the rankings @racket[k_1 ... k_n].
 
 @examples[ #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(pr (either (nrm/exc "peter" "ann") (nrm/exc "bob" "charly")))
+(pr (either/or (nrm/exc "peter" "ann") (nrm/exc "bob" "charly")))
 ]
 }
 
