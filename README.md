@@ -34,7 +34,7 @@ Apart from displaying the output of a program, the interactions panel can be use
 
 <img src="https://github.com/tjitze/ranked-programming/blob/master/documentation/images/program_2.jpeg" width="500">
 
-Furthermore, all the definitions of our program are available when evaluating expressions in the interaction panel. In the example below we interactively call `(count 1)` and observe that the output is more than 100.
+Furthermore, all the definitions of our program are available when evaluating expressions in the interaction panel. In the example below we interactively enter an expression which calls `(count 1)` and observes that the output is greater than 100.
 
 <img src="https://github.com/tjitze/ranked-programming/blob/master/documentation/images/program_3.jpeg" width="500">
 
