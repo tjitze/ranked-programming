@@ -22,7 +22,7 @@ When done we can close the package manager window.
 
 ## Defining Your First Program
 
-The DrRacket window has two text panels: the definitions panel (top half) and the interactions panel (bottom half). The purpose of the definitions panel is to define your program. Let's give a simple example. Any program starts by specifying its language. We use the Racket language, so we say `#lang racket`. In addition, we must say that we `require` the package called `ranked-programming`. We can then define our program. When we click *Run*, the output of our program is displayed in the interactions panel.
+The DrRacket window has two text panels: the definitions panel (top half) and the interactions panel (bottom half). The purpose of the definitions panel is to define your program. Let's give a simple example. Any program starts by specifying its language. We use the Racket language, so we say `#lang racket`. In addition, we must say that we require the package called ranked-programming: `(require ranked-programming)`. We can then define our program. When we click *Run*, the output of our program is displayed in the interactions panel.
 
 <img src="https://github.com/tjitze/ranked-programming/blob/master/documentation/images/program_1.jpeg" width="500">
 
