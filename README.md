@@ -4,7 +4,7 @@ This repository contains the `ranked-programming` package, which implements rank
 
 A complete language reference can be found [here](http://docs.racket-lang.org/ranked-programming@ranked-programming/index.html).
 
-In this document we provide some instructions to get started.
+In this document we provide some instructions to get started with ranked programming in Racket. For a more general introduction to Racket please consult [Racket's own getting started](https://docs.racket-lang.org/getting-started/) guide.
 
 # Getting Started
 
