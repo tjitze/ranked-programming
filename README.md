@@ -26,6 +26,8 @@ The DrRacket window has two text panels: the definitions panel (top half) and th
 
 <img src="https://github.com/tjitze/ranked-programming/blob/master/documentation/images/program_1.jpeg" width="500">
 
+Note that the syntax used here differs from the syntax of the language described in the paper. See the [reference](http://docs.racket-lang.org/ranked-programming@ranked-programming/index.html) for details.
+
 ## Interactive Evaluation of Expressions
 
 Apart from displaying the output of a program, the interactions panel can also be used to evaluate expressions interactively. This is useful for debugging purposes. It's also useful if we just want to experiment with the language. We can use the program we entered above as a starting point. Click *Run* and enter an expression (for example `(pr (nrm/exc "A" "B"))`) in the interactions panel.
