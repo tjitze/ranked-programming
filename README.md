@@ -10,7 +10,7 @@ In this document we provide some instructions to get started with ranked program
 
 ## Install Racket
 
-The ranked programming library is written for use with the *Racket* programming language, which is based on the Scheme dialect of LISP. To get started, we first need to download and install Racket, which includes N editor called *DrRacket*. The download can be obtained [here](https://download.racket-lang.org).
+The ranked programming library is written for use with the *Racket* programming language, which is based on the Scheme dialect of LISP. To get started, we first need to download and install Racket, which includes an editor called *DrRacket*. The download can be obtained [here](https://download.racket-lang.org).
 
 ## Install the Ranked Programming Package
 
