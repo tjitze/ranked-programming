@@ -22,10 +22,11 @@
 
 @section{Introduction}
 
-The @racket[ranked-programming] package implements the @italic{Ranked Scheme} language described in the paper
-   @(let ([url "https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf"])
-   (link url "Ranked Programming")) (to be presented at IJCAI 2019) in the form of a library for the Racket programming language.
-A quick-start guide can be found @(let ([url "https://github.com/tjitze/ranked-programming/xx"]) (link url "here")). 
+The @racket[ranked-programming] package implements ranked programming functionality for the Racket programming language.
+For background and general introduction on ranked programming please read
+@(let ([url "https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf"])(link url "this paper")) (to be presented at IJCAI 2019).
+
+A quick-start guide can be found @(let ([url "https://github.com/tjitze/ranked-programming/blob/master/README.md"]) (link url "here")). 
 This document contains a complete reference of the functionality provided by this library.
 
 Before using this reference, the reader should be familiar with the paper linked to above.
@@ -255,7 +256,7 @@ The following example determines the degree of surprise that @racket[(recur 1)] 
 (rank-of (lambda (x) (> x 500)) (recur 1))
 ]
 
-The ranking @racket[k] as much as necessary but no more.
+The ranking @racket[k] is consulted as much as necessary but no more.
 More precisely, @racket[k] is consulted until a value for which @racket[pred] returns @racket[#t] is encountered.}
 
 @defproc[(failure) ranking?]{
