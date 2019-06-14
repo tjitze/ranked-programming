@@ -1,35 +1,63 @@
 #lang racket
 (require ranked-programming)
 
-; the hidden markov model example from the paper
+; Read dictionary
+(define (read-file filename)
+  (with-input-from-file filename
+    (λ ()
+      (for/list ([line (in-lines)])
+        line))))
 
-; A simple toy-example of a ranking-based hidden markov model specified through
-; the parameters init, trans and emit.
-(define (init)
-  (either/or "rainy" "sunny"))
-(define (trans s)
-  (case s
-    (("rainy") (nrm/exc "rainy" "sunny" 2))
-    (("sunny") (nrm/exc "sunny" "rainy" 2))))
-(define (emit s)
-  (case s
-    (("rainy") (nrm/exc "yes" "no" 1))
-    (("sunny") (nrm/exc "no" "yes" 1))))
+(define dictionary (map string->list (read-file "google-10000-english-no-swears.txt")))
 
-; a generic implementation of a hidden markov model
-(define (hmm obs)
-  (if (empty? obs)
-      ($ list (init))
-      ($ cdr
-         (observe (lambda (x) (eq? (car x) (car obs)))
-                  (rlet* ((p (hmm (cdr obs)))
-                          (s (trans (car p)))
-                          (o (emit s)))
-                         (cons o (cons s p)))))))
+; Below is an implementation of the "match" function mentioned in the paper that
+; is based on a trie encoding of the dictionary, with lookup supporting wildcards.
 
-; Inference example 1
-(pr (hmm `("no" "no" "yes" "no" "no")))
+; An empty trie
+(define empty-trie (cons `() `()))
 
-; Inference example 2
-(pr (hmm `("yes" "yes" "yes" "no" "no")))
+; Add key/value to trie
+(define (add-to-trie trie key value)
+  (cond
+    [(empty? key) (cons (car trie) (list value))]
+    [(assoc (car key) (car trie))
+     (cons (dict-set (car trie) (car key) (add-to-trie (cdr (assoc (car key) (car trie))) (cdr key) value)) (cdr trie))] 
+    [else (cons (dict-set (car trie) (car key) (add-to-trie empty-trie (cdr key) value)) (cdr trie))]))
+
+; Add dictionary to tree (each word mapped to itself)
+(define (add-all-to-trie trie dict)
+  (if (empty? dict)  trie (add-to-trie (add-all-to-trie trie (cdr dict)) (car dict) (car dict))))
+
+; Create the trie for the dictionary
+(define dict-trie (add-all-to-trie empty-trie dictionary))
+
+; Lookup value for given key in a set of tries
+(define (lookup* tries word)
+  (if (empty? word)
+      (append* (map cdr tries))
+      (if (equal? (car word) #\*)
+          (lookup* (map cdr (append* (map car tries))) (cdr word))
+          (lookup* (map cdr (filter (lambda (x) (equal? (car x) (car word))) (append* (map car tries)))) (cdr word)))))
+ 
+; Take pattern as input, return list of strings that match pattern (* for wildcard)
+(define (match pattern) (lookup* (list dict-trie) pattern))
+
+; The gen function from the paper
+(define (gen input)
+  (if (empty? input)
+      `()
+      (nrm/exc ($ cons (car input) (gen (cdr input)))
+               (either/or (gen (cdr input))
+                          ($ cons #\* (gen (cdr input)))
+                          ($ cons #\* (gen input))))))
+
+; The correct function from the paper
+(define (correct input)
+  ($ match
+     (observe
+      (lambda (x) (not (empty? (match x))))
+      (gen (string->list input)))))
+
+; example
+(pr-first 3 (correct "swtzerlandd"))
 
