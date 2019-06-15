@@ -44,12 +44,12 @@ Furthermore, all the definitions of our program are available when evaluating ex
 
 All the examples from the paper are included in the [examples](https://github.com/tjitze/ranked-programming/blob/master/examples) directory. These are:
 
-[recursion.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/recursion.rkt) An example of a recursively defined ranking
-[ranked_procedure_call.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/ranked_procedure_call.rkt) An example using the ranked procedure call
-[ranked_let.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/ranked_let.rkt) An example using the ranked let statement
-[ranking_network.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/ranking_network.rkt) A ranking network
-[boolean_circuit.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/boolean_circuit.rkt) The boolean circuit diagnosis example
-[hidden_markov.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/hidden_markov.rkt) The generic hidden markov model implementation + umbrella example
-[spelling_correction.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/spelling_correction.rkt) The spelling correction example (using the file [google-10000-english-no-swears.txt](https://github.com/tjitze/ranked-programming/blob/master/examples/google-10000-english-no-swears.txt) as dictionary)
+* [recursion.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/recursion.rkt) An example of a recursively defined ranking.
+* [ranked_procedure_call.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/ranked_procedure_call.rkt) An example using the ranked procedure call.
+* [ranked_let.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/ranked_let.rkt) An example using the ranked let statement.
+* [ranking_network.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/ranking_network.rkt) A ranking network.
+[boolean_circuit.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/boolean_circuit.rkt) The boolean circuit diagnosis example.
+* [hidden_markov.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/hidden_markov.rkt) The generic hidden markov model implementation + umbrella example.
+* [spelling_correction.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/spelling_correction.rkt) Spelling correction (using [google-10000-english-no-swears.txt](https://github.com/tjitze/ranked-programming/blob/master/examples/google-10000-english-no-swears.txt) as dictionary).
 
-
+All these examples can be opened (or copy-pasted into the definitions panel) directly in the DrRacket editor.
