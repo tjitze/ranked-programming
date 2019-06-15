@@ -4,7 +4,7 @@ This repository contains the `ranked-programming` package for use with the [Rack
 
 [Ranked Programming (Tjitze Rienstra)](https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf) (To be presented at IJCAI 2019).
 
-Ranked programming is similar to probabilistic programming, except that the underlying uncertainty formalism is replaced with ranking theory, which measures uncertainty using degrees of surprise on the integer scale from 0 to infinity. Like probabilistic programming, ranked programming provides a simple and flexible way to represent models with uncertain behaviour, and to perform inference with such models. However, instead of using probabilities, we just specify what happens ``normally'' and what happens ``exceptionally''. For a more detailed description of this approach please read the aforementioned paper.
+Ranked programming is similar to probabilistic programming, except that the underlying uncertainty formalism is replaced with ranking theory, which measures uncertainty using degrees of surprise on the integer scale from 0 to infinity. Like probabilistic programming, ranked programming provides a simple and flexible way to represent models with uncertain behaviour, and to perform inference with such models. However, instead of using probabilities, we just specify what happens "normally" and what happens "exceptionally". For a more detailed description of this approach please read the aforementioned paper.
 
 A complete reference for the ranked-programming package can be found [here](http://docs.racket-lang.org/ranked-programming@ranked-programming/index.html).
 
