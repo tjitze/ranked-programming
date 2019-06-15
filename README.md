@@ -1,6 +1,6 @@
 # Ranked Programming
 
-This repository contains the `ranked-programming` package for use with the [Racket](https://racket-lang.org) programming language. It is an implementation of the approach described in the paper [Ranked Programming](https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf), which will be presented at IJCAI 2019.
+This repository contains the `ranked-programming` package for use with the [Racket](https://racket-lang.org) programming language, which is based on the Scheme dialect of LISP. It implements the approach described in the paper [Ranked Programming](https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf). This paper will be presented at IJCAI 2019 conference (August 10-16, 2019, Macao, China).
 
 In short, ranked programming is similar to probabilistic programming, except that the underlying uncertainty formalism is replaced with ranking theory, which measures uncertainty using degrees of surprise on the integer scale from 0 to ∞. Like probabilistic programming, ranked programming provides a simple and flexible way to represent models with uncertain behaviour, and to perform inference with such models. However, instead of using probabilities, one specifies what happens "normally" and what happens "exceptionally". For a more detailed description, please read the [paper](https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf).
 
