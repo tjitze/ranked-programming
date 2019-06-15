@@ -1,8 +1,6 @@
 # Ranked Programming
 
-This repository contains the `ranked-programming` package for use with the [Racket](https://racket-lang.org) programming language. It is an implementation of the approach described in the following paper.  
-
-[Ranked Programming (Tjitze Rienstra)](https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf) (To be presented at IJCAI 2019).
+This repository contains the `ranked-programming` package for use with the [Racket](https://racket-lang.org) programming language. It is an implementation of the approach described in the paper [Ranked Programming](https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf), which will be presented at IJCAI 2019.
 
 In short, ranked programming is similar to probabilistic programming, except that the underlying uncertainty formalism is replaced with ranking theory, which measures uncertainty using degrees of surprise on the integer scale from 0 to ∞. Like probabilistic programming, ranked programming provides a simple and flexible way to represent models with uncertain behaviour, and to perform inference with such models. However, instead of using probabilities, one specifies what happens "normally" and what happens "exceptionally". For a more detailed description, please read the aforementioned paper.
 
@@ -44,4 +42,14 @@ Furthermore, all the definitions of our program are available when evaluating ex
 
 ## Running examples
 
-(TODO)
+All the examples from the paper are included in the [examples](https://github.com/tjitze/ranked-programming/blob/master/examples) directory. These are:
+
+[recursion.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/recursion.rkt) An example of a recursively defined ranking
+[ranked_procedure_call.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/ranked_procedure_call.rkt) An example using the ranked procedure call
+[ranked_let.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/ranked_let.rkt) An example using the ranked let statement
+[ranking_network.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/ranking_network.rkt) A ranking network
+[boolean_circuit.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/boolean_circuit.rkt) The boolean circuit diagnosis example
+[hidden_markov.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/hidden_markov.rkt) The generic hidden markov model implementation + umbrella example
+[spelling_correction.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/spelling_correction.rkt) The spelling correction example (using the file [google-10000-english-no-swears.txt](https://github.com/tjitze/ranked-programming/blob/master/examples/google-10000-english-no-swears.txt) as dictionary)
+
+
