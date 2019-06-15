@@ -52,4 +52,4 @@ All the examples from the paper are included in the [examples](https://github.co
 * [hidden_markov.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/hidden_markov.rkt) The generic hidden markov model implementation + umbrella example.
 * [spelling_correction.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/spelling_correction.rkt) Spelling correction (using [google-10000-english-no-swears.txt](https://github.com/tjitze/ranked-programming/blob/master/examples/google-10000-english-no-swears.txt) as dictionary).
 
-All these examples can be opened (or copy-pasted into the definitions panel) directly in the DrRacket editor.
+These examples can be opened (or copy-pasted into the definitions panel) directly in the DrRacket editor.
