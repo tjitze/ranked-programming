@@ -1,6 +1,6 @@
 # Ranked Programming
 
-This repository contains the `ranked-programming` package for use with the [Racket](https://racket-lang.org) programming language. It is an implementation of the approach described in the followinbg paper:
+This repository contains the `ranked-programming` package for use with the [Racket](https://racket-lang.org) programming language. It is an implementation of the approach described in the following paper:
 
 [Ranked Programming (Tjitze Rienstra)](https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf) (To be presented at IJCAI 2019).
 
