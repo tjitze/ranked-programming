@@ -53,3 +53,12 @@ All the examples from the paper are included in the [examples](https://github.co
 * [spelling_correction.rkt](https://github.com/tjitze/ranked-programming/blob/master/examples/spelling_correction.rkt) Spelling correction (using [google-10000-english-no-swears.txt](https://github.com/tjitze/ranked-programming/blob/master/examples/google-10000-english-no-swears.txt) as dictionary).
 
 These examples can be downloaded and opened (or copy-pasted into the definitions panel) directly in the DrRacket editor.
+
+
+# Contact
+
+Please contact me if you have questions or suggestions (tjitze@gmail.com). Contributions are welcome.
+
+# License
+
+RankPL is licensed under the MIT license.
