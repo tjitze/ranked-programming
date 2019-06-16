@@ -61,4 +61,4 @@ Please contact me if you have questions or suggestions (tjitze@gmail.com). Contr
 
 # License
 
-RankPL is licensed under the MIT license.
+This software is licensed under the MIT license.
