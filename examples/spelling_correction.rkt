@@ -59,5 +59,5 @@
       (gen (string->list input)))))
 
 ; example
-(pr-first 3 (correct "swtzerlandd"))
+(pr-first 2 (correct "swtzerlandd"))
 
