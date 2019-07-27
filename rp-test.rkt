@@ -56,25 +56,25 @@
                     (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3))))
   
   (test-case
-   "observe-l"
-   (check-rf-equal? (observe-l odd? 100 (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+   "observe-r"
+   (check-rf-equal? (observe-r 100 odd? (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
                     (construct-ranking (1 . 0) (3 . 2) (0 . 100) (2 . 102)))
-   (check-rf-equal? (observe-l even? 100 (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+   (check-rf-equal? (observe-r 100 even? (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
                     (construct-ranking (0 . 0) (2 . 2) (1 . 100) (3 . 102)))
-   (check-rf-equal? (observe-l (lambda (x) #F) 100 (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+   (check-rf-equal? (observe-r 100 (lambda (x) #F) (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
                     (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
-   (check-rf-equal? (observe-l (lambda (x) #T) 100 (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+   (check-rf-equal? (observe-r 100 (lambda (x) #T) (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
                     (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3))))
   
    (test-case
-   "observe-j"
-   (check-rf-equal? (observe-j odd? 100 (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+   "observe-e"
+   (check-rf-equal? (observe-e 100 odd? (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
                     (construct-ranking (1 . 0) (3 . 2) (0 . 99) (2 . 101)))
-   (check-rf-equal? (observe-j even? 100 (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+   (check-rf-equal? (observe-e 100 even? (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
                     (construct-ranking (0 . 0) (2 . 2) (1 . 101) (3 . 103)))
-   (check-rf-equal? (observe-j (lambda (x) #F) 100 (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
-                    (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
-   (check-rf-equal? (observe-j (lambda (x) #T) 100 (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+   (check-rf-equal? (observe-e 100 (lambda (x) #F) (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+                    (failure))
+   (check-rf-equal? (observe-e 100 (lambda (x) #T) (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3)))
                     (construct-ranking (0 . 0) (1 . 1) (2 . 2) (3 . 3))))
    
   (test-case
