@@ -438,15 +438,13 @@ This procedure will not terminate if @racket[k_1] and @racket[k_2] are infinite 
   Short for @racket[(pr-first 10 k)].
 }
 
-@defproc[(observe-l [pred (any/c -> boolean?)] [rank (rank?)] [k (ranking?)]) ranking?]{
-Like @racket[observe] but implements the more general @italic{L-conditionalization} operation, where @racket[rank] is the extra evidence strength parameter.
-This operation is discussed @(let ([url "https://www.researchgate.net/profile/Moises_Goldszmidt/publication/221393230_Rank-based_Systems_A_Simple_Approach_to_Belief_Revision_Belief_Update_and_Reasoning_about_Evidence_and_Actions/links/546e06130cf29806ec2e6cda/Rank-based-Systems-A-Simple-Approach-to-Belief-Revision-Belief-Update-and-Reasoning-about-Evidence-and-Actions.pdf
-"]) (link url "here")).}
+@defproc[(observe-r [x (rank?)] [pred (any/c -> boolean?)] [k (ranking?)]) ranking?]{
+Like @racket[observe] but implements the more general @italic{evidence-oriented} conditionalization operation,
+where @racket[x] is the extra evidence strength parameter.}
 
-@defproc[(observe-j [pred (any/c -> boolean?)] [rank (rank?)] [k (ranking?)]) ranking?]{
-Like @racket[observe] but implements the more general @italic{J-conditionalization} operation, where @racket[rank] is the extra evidence strength parameter.
-This operation is discussed @(let ([url "https://www.researchgate.net/profile/Moises_Goldszmidt/publication/221393230_Rank-based_Systems_A_Simple_Approach_to_Belief_Revision_Belief_Update_and_Reasoning_about_Evidence_and_Actions/links/546e06130cf29806ec2e6cda/Rank-based-Systems-A-Simple-Approach-to-Belief-Revision-Belief-Update-and-Reasoning-about-Evidence-and-Actions.pdf
-"]) (link url "here")).}
+@defproc[(observe-e [x (rank?)] [pred (any/c -> boolean?)] [k (ranking?)]) ranking?]{
+Like @racket[observe] but implements the more general @italic{evidence-oriented} conditionalization operation,
+where @racket[x] is the extra evidence strength parameter.}
 
 @defproc[(cut [rank (rank?)] [k (ranking?)]) ranking?]{
 Returns the ranking @racket[k] restricted to values with a rank of at most @racket[rank].
