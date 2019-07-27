@@ -276,9 +276,8 @@
 (define (pr-first* n res)
   (if (infinite? (rank res))
           (display-done)
-          (if (= n 0)
-              (display-more)
-              (begin (display-element res) (pr-first* (- n 1) (successor res))))))
+          (begin (display-element res)
+                 (if (= n 1) (display-more) (pr-first* (- n 1) (successor res))))))
 
 ; Print first 10 lowest-ranked values of ranking for given r-expression
 (define (pr r-exp) (pr-first 10 r-exp))
