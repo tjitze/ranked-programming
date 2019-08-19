@@ -129,7 +129,7 @@
     (mark-as-rf (normalise (filter-ranking pred (delay (autocast r)))))))
 
 ; observe-r (result-oriented conditionalization, also called j-conditionalization)
-(define (observe-r pred x r) 
+(define (observe-r x pred r) 
   (unless (one-arg-proc? pred) (raise-argument-error 'observe-r "predicate" 0 pred x r))
   (unless (rank? x) (raise-argument-error 'observe-r "rank (non-negative integer or infinity)" 1 pred x r))
   (nrm/exc
@@ -137,11 +137,11 @@
    (observe (compose not pred) r) x))
 
 ; observe-e (evidence-oriented conditionalization, also called l-conditionalization)
-(define (observe-e pred x r)
+(define (observe-e x pred r)
   (unless (one-arg-proc? pred) (raise-argument-error 'observe-e "predicate" 0 pred x r))
   (unless (rank? x) (raise-argument-error 'observe-e "rank (non-negative integer or infinity)" 1 pred x r))
   (let* ((rp (rank-of pred r)))
-    (if (< r rp)
+    (if (< x rp)
        (observe-r (- rp x) pred r)
        (observe-r (+ (- x rp) (rank-of (compose not pred) r)) pred r))))
 
