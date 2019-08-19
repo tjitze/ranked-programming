@@ -24,15 +24,16 @@
 
 The @racket[ranked-programming] package implements ranked programming functionality for the Racket programming language.
 For background and general introduction on ranked programming please read
-@(let ([url "https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf"])(link url "this paper")) (to be presented at IJCAI 2019).
+@(let ([url "https://github.com/tjitze/ranked-programming/blob/master/documentation/ranked_programming.pdf"])(link url "this paper"))
+  (presented at IJCAI 2019).
 
-A quick-start guide can be found @(let ([url "https://github.com/tjitze/ranked-programming/blob/master/README.md"]) (link url "here")). 
-This document contains a complete reference of the functionality provided by this library.
+This document contains a complete reference of the functionality provided by this package.
+A quick-start guide for this package can be found @(let ([url "https://github.com/tjitze/ranked-programming/blob/master/README.md"]) (link url "here")). 
 
 Before using this reference, the reader should be familiar with the paper linked to above.
 There are a few minor differences between the language described in the paper and the language implemented here,
   as well as a number of additional features not discussed in the paper.
-We list them here:
+We list the differences and additions here:
 
 @bold{Ranked Choice}
 
@@ -118,7 +119,7 @@ We list them here:
      ranked procedure call function (@racket[$]),
      and ranked @racket[let*] expression (@racket[rlet*]).
 
-   This library implements a number of additional functions and expression types:
+   This library also provides the following additional functions and expression types, which are not described in the paper:
 
    @itemlist[
      @item{@racket[either-of] Choose elements from a list (all equally surprising).}
@@ -202,12 +203,12 @@ If @racket[k_1 ... k_n] are rankings, then @racket[(either/or k_1 ... k_n)] retu
 @defproc[(either-of [lst (list?)])
          ranking?]{
 
-Returns a ranking according to which all elements of @racket[lst] are equally surprising.
+Returns a ranking according to which all elements of the list @racket[lst] are equally surprising.
 
 @examples[ #:label "Example:" #:eval ((make-eval-factory #:lang 'racket/base
                              '(ranked-programming)))
-(define weekdays `("mon" "tue" "wed" "thu" "fri"))
-(define weekend `("sat" "sun"))
+(define weekdays (list "mon" "tue" "wed" "thu" "fri"))
+(define weekend (list "sat" "sun"))
 (pr (nrm/exc (either-of weekdays) (either-of weekend)))
 ]
 }
@@ -244,10 +245,6 @@ Returns the rank of the predicate @racket[pred] according to the ranking @racket
 This value represents the degree of surprise that @racket[pred] holds according to @racket[k].
 It is the rank of the lowest-ranked value for which @racket[pred] returns @racket[#t].
 
-If @racket[pred] does not return @racket[#t] for some finitely-ranked value,
-   and @racket[k] is infinite (i.e., assigns finite ranks to infinitely many values)
-   then @racket[rank-of] does not terminate.
-  
 The following example determines the degree of surprise that @racket[(recur 1)] returns a value higher than 500.
 
 @examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
@@ -257,7 +254,15 @@ The following example determines the degree of surprise that @racket[(recur 1)] 
 ]
 
 The ranking @racket[k] is consulted as much as necessary but no more.
-More precisely, @racket[k] is consulted until a value for which @racket[pred] returns @racket[#t] is encountered.}
+More precisely, @racket[k] is consulted until a value for which @racket[pred] returns @racket[#t] is encountered.
+
+If @racket[pred] does not return @racket[#t] for some finitely-ranked value,
+   and @racket[k] is infinite (i.e., assigns finite ranks to infinitely many values)
+   then @racket[rank-of] does not terminate.
+
+The predicate @racket[pred] is only called for values that have a finite rank according to @racket[k].
+If @racket[pred] does not terminate for one of these values then @racket[rank-of] might also not terminate.
+If @racket[pred] throws an error for one of these values then @racket[rank-of] might also throw an error.}
 
 @defproc[(failure) ranking?]{
 Returns an empty ranking.
@@ -283,6 +288,10 @@ we observe that the value that is returned is higher than 500.
 (define (recur x) (nrm/exc x (recur (* x 2)) 1))
 (pr (observe (lambda (x) (> x 500)) (recur 1)))
 ]
+
+The predicate @racket[pred] is only called for values that have a finite rank according to @racket[k].
+If @racket[pred] does not terminate for one of these values then @racket[observe] might also not terminate.
+If @racket[pred] throws an error for one of these values then @racket[observe] might also throw an error.}
 }
 
 @defproc[($ [k_1 any/c] ... [k_n any/c])
@@ -295,11 +304,6 @@ Suppose that the rankings @racket[k_1 ... k_n] assign ranks @racket[r_1 ... r_n]
 Furthermore suppose that the standard procedure call @racket[(v_1 ... v_n)] returns @racket[v].
 Then @racket[v] is returned with rank @racket[r_1]+...+@racket[r_n],
     unless there is another sequence of values that yields a lower rank for @racket[v] using the same rule.
-
-If an argument for a parameter @racket[k_1 ... k_n] is not a ranking,
-  then it is interpreted as a ranking according to which the
-  given argument receives rank 0, and all other values rank infinity.
-This is demonstrated by the following example.
 
 Consider the procedure call @racket[(+ 5 10)].
 The ranked version of this is @racket[($ + 5 10)]:
@@ -434,13 +438,13 @@ This procedure will not terminate if @racket[k_1] and @racket[k_2] are infinite 
 }
 
 @defproc[(pr [k (ranking/c)]) void?]{
-  Displayes the 10 lowest-ranked values of the ranking @racket[k].
+  Displays the 10 lowest-ranked values of the ranking @racket[k].
   Short for @racket[(pr-first 10 k)].
 }
 
 @defproc[(observe-r [x (rank?)] [pred (any/c -> boolean?)] [k (ranking?)]) ranking?]{
-Like @racket[observe] but implements the more general @italic{evidence-oriented} conditionalization operation,
-where @racket[x] is the extra evidence strength parameter.}
+Like @racket[observe] but implements the more general @italic{result-oriented} conditionalization operation,
+where @racket[x] is the extra posterior belief strength parameter.}
 
 @defproc[(observe-e [x (rank?)] [pred (any/c -> boolean?)] [k (ranking?)]) ranking?]{
 Like @racket[observe] but implements the more general @italic{evidence-oriented} conditionalization operation,
