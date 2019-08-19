@@ -130,7 +130,7 @@ We list the differences and additions here:
      @item{@racket[rf-equal?] Check if two rankings are equivalent.}
      @item{@racket[rf->hash]/@racket[rf->assoc]/@racket[rf->stream] Convert ranking to other data structure.}
      @item{@racket[pr-all]/@racket[pr-first]/@racket[pr-until]/@racket[pr] Procedures for displaying a ranking.}
-     @item{@racket[observe-l]/@racket[observe-j] Special @racket[observe] variants.}
+     @item{@racket[observe-r]/@racket[observe-e] Generalised @racket[observe] variants.}
      @item{@racket[cut] Restrict ranking up to a given rank.}
      @item{@racket[limit] Restrict ranking up to a given number of values.}
      @item{@racket[rank?]/@racket[ranking?] Type checking for ranks and rankings.}
