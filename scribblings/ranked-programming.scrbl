@@ -458,6 +458,29 @@ Returns the ranking @racket[k] restricted to values with a rank of at most @rack
 Returns the ranking @racket[k] restricted to the @racket[count] lowest-ranked values.
 }
 
+@defproc[(set-global-dedup [enabled (boolean?)]) void?]{
+Sets the global deduplication setting. If enabled, duplicate higher-ranked values are filtered
+out of any ranking that is computed. If disabled, duplicates may occur (e.g. a ranking where some
+value x occurs more than once, where the higher-ranked occurrence is redundant). By default, this
+setting is enabled. Disabling it will lead to less memory consumption, since duplicate detection
+requires memorisation of values. In some cases, disabling deduplication can speed up inference. In
+other cases, disabling deduplication slows down inference, due to redundant computations. Which is
+better depends on the implementation.
+
+Without deduplication:
+@examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
+                             '(ranked-programming)))
+(set-global-dedup #F)
+(pr (nrm/exc "a" "a" 5))
+]
+
+With deduplication:
+@examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
+                             '(ranked-programming)))
+(set-global-dedup #T)
+(pr (nrm/exc "a" "a" 5))
+]}
+
 @defproc[(rank? [x (any/c)]) boolean?]{
 Returns @racket[#t] if @racket[x] is a rank (a non-negative integer or infinity) and @racket[#f] otherwise.
 }
