@@ -33,6 +33,7 @@
  pr-until
  pr-first
  pr
+ set-global-dedup
 )
 
 ; used as marker for ranking function (only for internal use)
@@ -273,3 +274,8 @@
 
 ; Print first 10 lowest-ranked values of ranking for given r-expression
 (define (pr r-exp) (pr-first 10 r-exp))
+
+; Change the global dedup setting (0 = no deduplication, any other value = full deduplication)
+(define (set-global-dedup x) (set-core-global-dedup x))
+
+

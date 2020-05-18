@@ -226,15 +226,17 @@
 
 ; deduplicate ranking (removes duplicate higher-ranked values)
 (define (dedup rf [s (set)])
-  (delay
-   (let ((res (force rf)))
-     (if (infinite? (rank res))
-         terminate-element
-         (if (set-member? s (value res))
-             (force (dedup (successor-promise res) s))
-             (element (value-promise res)
-                      (rank res)
-                      (dedup (successor-promise res) (set-add s (value res)))))))))
+  (if (not global-dedup-enabled)
+      rf
+      (delay
+        (let ((res (force rf)))
+          (if (infinite? (rank res))
+              terminate-element
+              (if (set-member? s (value res))
+                  (force (dedup (successor-promise res) s))
+                  (element (value-promise res)
+                           (rank res)
+                           (dedup (successor-promise res) (set-add s (value res))))))))))
 
 ; convert ranking function to hash table (value->rank)
 (define (convert-to-hash rf)
@@ -275,3 +277,6 @@
          (cdar assoc-list)
          (construct-from-assoc (cdr assoc-list))))))
 
+; Set the core deduplication setting: #T=enabled, #F=disabled (default=#T)
+(define global-dedup-enabled #T)
+(define (set-core-global-dedup x) (set! global-dedup-enabled x))

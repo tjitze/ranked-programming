@@ -161,5 +161,12 @@
      (check-equal? (rf->assoc (failure)) `())
      (check-equal? (rf->assoc (construct-ranking (1 . 0))) `((1 . 0)))
      (check-equal? (rf->assoc (construct-ranking (1 . 0) (2 . 1))) `((1 . 0) (2 . 1)))
-     (check-equal? (rf->assoc (construct-ranking (1 . 0) (2 . 1) (2 . 2))) `((1 . 0) (2 . 1))))))
+     (check-equal? (rf->assoc (construct-ranking (1 . 0) (2 . 1) (2 . 2))) `((1 . 0) (2 . 1)))))
+  
+ (test-case
+   "set-global-dedup"
+   (let ((with_dedup     (begin (set-global-dedup #T) (rf->assoc (nrm/exc 10 10 10))))
+         (without-dedup  (begin (set-global-dedup #F) (let ((ret (rf->assoc (nrm/exc 10 10 10)))) (begin (set-global-dedup #T) ret)))))
+     (check-equal? with_dedup    `((10 . 0)))
+     (check-equal? without-dedup `((10 . 0) (10 . 10))))))
   
