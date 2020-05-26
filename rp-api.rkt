@@ -17,6 +17,7 @@
  either-of
  either/or
  observe
+ dedup
  observe-r
  observe-e
  cut
@@ -33,7 +34,6 @@
  pr-until
  pr-first
  pr
- set-global-dedup
 )
 
 ; used as marker for ranking function (only for internal use)
@@ -45,7 +45,7 @@
   (lambda (value)
     (if (ranking? value)
         (force (cdr value))
-        (element (delay value) 0 terminate-promise))))
+        (element value 0 +inf.0 terminate-promise))))
 
 ; is value a ranking function?
 (define (ranking? value) (and (pair? value) (eq? (car value) rf-marker)))
@@ -79,13 +79,13 @@
     ((construct-ranking a ...)
      (mark-as-rf
       (check-correctness
-       (construct-from-assoc `(a ...)))))))
+       (from-assoc `(a ...)))))))
 
 ; truth
 (define !
   (lambda (value)
     (mark-as-rf
-     (element (delay value) 0 terminate-promise))))
+     (delay (element value 0 +inf.0 terminate-promise)))))
 
 ; nrm (alternative syntax)
 (define-syntax nrm/exc
@@ -95,11 +95,8 @@
      (begin
        (unless (rank? rank) (raise-argument-error 'nrm/exc "rank (non-negative integer or infinity)" 1 r-exp1 rank r-exp2))
        (mark-as-rf
-        (dedup
-         (normalise
-          (merge
-           (delay (autocast r-exp1))
-           (shift rank (delay (autocast r-exp2)))))))))))
+        (normalise
+         (merge-shift (delay (autocast r-exp1)) (delay (autocast r-exp2)) rank)))))))
 
 ; either-of
 (define (either-of lst)
@@ -109,14 +106,14 @@
         (λ (list)
           (if (empty? list)
               terminate-promise
-              (delay (element (delay (car list)) 0 (either-of* (cdr list))))))))
-    (mark-as-rf (dedup (either-of* lst)))))
+              (delay (element (car list) 0 (if (= (length list) 1) +inf.0 0) (either-of* (cdr list))))))))
+    (mark-as-rf (either-of* lst))))
 
 ; either/or
 (define-syntax either/or
   (syntax-rules ()
     ((either/or) (mark-as-rf terminate-promise))
-    ((either/or r-exp rest ...) (mark-as-rf (dedup (merge (delay (autocast r-exp)) (either* rest ...)))))))
+    ((either/or r-exp rest ...) (mark-as-rf (merge (delay (autocast r-exp)) (either* rest ...))))))
 
 (define-syntax either*
   (syntax-rules ()
@@ -128,6 +125,11 @@
   (begin
     (unless (one-arg-proc? pred) (raise-argument-error 'observe "predicate" 0 pred r))
     (mark-as-rf (normalise (filter-ranking pred (delay (autocast r)))))))
+
+; forced deduplocation
+(define (deduplicate r [cond #T])
+  (if cond
+      (mark-as-rf (dedup (delay (autocast r)))) r))
 
 ; observe-r (result-oriented conditionalization, also called j-conditionalization)
 (define (observe-r x pred r) 
@@ -173,29 +175,26 @@
 (define ($ . r-exps)
   (if (> (length r-exps) 0)
       (if (ranking? (car r-exps))
-          ; function argument is ranking over functions
+          ; function argument is ranking over functions (todo: test this, autocast needs delay?)
           (mark-as-rf
-           (dedup
-            (merge-apply
+           (merge-apply
              (map-value
-              (λ (form) (delay (autocast (apply (car form) (cdr form)))))
-              (dedup (join-list (map (λ (x) (delay (autocast x))) r-exps))))
-             (λ (rf) rf))))
+              (λ (form) (autocast (apply (car form) (cdr form))))
+              (join-list (map (λ (x) (delay (autocast x))) r-exps)))
+             (λ (rf) rf)))
           (if (primitive? (car r-exps))
               ; function argument is primitive (function will not return ranking)
               (mark-as-rf
-               (dedup
-                (map-value
-                 (λ (args) (apply (car r-exps) args))
-                 (dedup (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps)))))))
-              ; function argument is not primitive (function may return ranking)
+               (map-value
+                (λ (args) (apply (car r-exps) args))
+                (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps)))))
+              ; function argument is not primitive (function may return ranking) (todo: test this, autocast needs delay?)
               (mark-as-rf
-               (dedup
-                (merge-apply
-                 (map-value
-                  (λ (args) (delay (autocast (apply (car r-exps) args))))
-                  (dedup (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps)))))
-                 (λ (rf) rf))))))
+               (merge-apply
+                (map-value
+                 (λ (args) (autocast (apply (car r-exps) args)))
+                 (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps))))
+                (λ (rf) rf)))))
       (raise-arity-error '$ (arity-at-least 1))))
 
 ; ranked let
@@ -217,15 +216,15 @@
 
 ; rf->hash (convert ranking to hash table value->rank)
 (define (rf->hash r-exp)
-  (convert-to-hash (delay (autocast r-exp))))
+  (to-hash (delay (autocast r-exp))))
   
 ; rf->assoc (convert ranking to associative list of (value . rank) pairs)
 (define (rf->assoc r-exp)
-  (convert-to-assoc (dedup (delay (autocast r-exp)))))
+  (to-assoc (dedup (delay (autocast r-exp)))))
 
 ; convert ranking function to stream of (value . rank) pairs
 (define (rf->stream r-exp)
-  (convert-to-stream (dedup (delay (autocast r-exp)))))
+  (to-stream (dedup (delay (autocast r-exp)))))
 
 ; Display helper functions
 (define display-header (λ () (begin (display "Rank  Value") (newline) (display "------------") (newline))))
@@ -234,15 +233,15 @@
 (define display-more (λ () (begin (display "...") (newline))))
 (define display-element (λ (el) (begin (display (~a (rank el) #:min-width 5)) (display " ") (display (value el)) (newline))))
 
-; Print complete ranking
-(define (pr-all r-exp)
+; Print complete ranking (todo: test this: autocast needs delay?)
+(define (pr-all r-exp) 
   (unless (void? r-exp)
     (let ((first-res (force (autocast r-exp))))
       (if (infinite? (rank first-res))
           (display-failure)
           (begin (display-header) (do-with (delay first-res) display-element) (display-done))))))
 
-; Print ranking for given r-expression up to given rank
+; Print ranking for given r-expression up to given rank (todo: test this: autocast needs delay?)
 (define (pr-until r r-exp)
   (unless (rank? r) (raise-argument-error 'observe-j "rank (non-negative integer or infinity)" 0 rank r-exp))
   (unless (void? r-exp)
@@ -258,7 +257,7 @@
           (display-more)
           (begin (display-element res) (pr-until* r (successor res))))))
 
-; Print first n lowest-ranked values of ranking for given r-expression
+; Print first n lowest-ranked values of ranking for given r-expression (todo: test this: autocast needs delay?)
 (define (pr-first n r-exp)
   (unless (void? r-exp)
     (let ((first-res (force (autocast r-exp))))
@@ -274,8 +273,5 @@
 
 ; Print first 10 lowest-ranked values of ranking for given r-expression
 (define (pr r-exp) (pr-first 10 r-exp))
-
-; Change the global dedup setting (0 = no deduplication, any other value = full deduplication)
-(define (set-global-dedup x) (set-core-global-dedup x))
 
 
