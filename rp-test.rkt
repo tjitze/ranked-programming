@@ -1,7 +1,7 @@
 #lang racket
 
-;(require "main.rkt")
 (require "rp-api.rkt")
+(require "rp-core.rkt")
 
 (module+ test
 
@@ -162,11 +162,45 @@
      (check-equal? (rf->assoc (construct-ranking (1 . 0))) `((1 . 0)))
      (check-equal? (rf->assoc (construct-ranking (1 . 0) (2 . 1))) `((1 . 0) (2 . 1)))
      (check-equal? (rf->assoc (construct-ranking (1 . 0) (2 . 1) (2 . 2))) `((1 . 0) (2 . 1)))))
-  
-; (test-case
-;   "set-global-dedup"
-;   (let ((with_dedup     (begin (set-global-dedup #T) (rf->assoc (nrm/exc 10 10 10))))
-;         (without-dedup  (begin (set-global-dedup #F) (let ((ret (rf->assoc (nrm/exc 10 10 10)))) (begin (set-global-dedup #T) ret)))))
-;     (check-equal? with_dedup    `((10 . 0)))
-;     (check-equal? without-dedup `((10 . 0) (10 . 10))))))
+
+  (test-case
+   "merge"
+   (check-equal? (to-assoc
+                  (merge*
+                   (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 3)))
+                   0
+                   (from-assoc (list `("A" . 0) `("B" . 2) `("C" . 4)))
+                   0))
+                 `(("a" . 0) ("A" . 0) ("b" . 1) ("B" . 2) ("c" . 3) ("C" . 4))))
+
+  (test-case
+   "shift"
+   (check-equal? (to-assoc
+                  (shift 10 (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 3)))))
+                 `(("a" . 10) ("b" . 11) ("c" . 13))))
+
+  (test-case
+   "map-value"
+   (check-equal? (to-assoc
+          (map-value
+           (lambda (x) (list x "x"))
+           (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 3)))))
+         `((("a" "x") . 0) (("b" "x") . 1) (("c" "x") . 3))))
+
+  (test-case
+   "merge-apply"
+   (check-equal? (to-assoc
+           (merge-apply
+           (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 3)))
+           (lambda (x) (from-assoc (list (cons x 0) (cons (list x) 1))))))
+         `(("a" . 0) (("a") . 1) ("b" . 1) (("b") . 2) ("c" . 3) (("c") . 4))))
+
+  (test-case
+   "join"
+   (check-equal? (to-assoc
+          (join
+           (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 2)))
+           (from-assoc (list `("A" . 0) `("B" . 1) `("C" . 2)))))
+         `((("a" "A") . 0) (("a" "B") . 1) (("b" "A") . 1) (("a" "C") . 2) (("b" "B") . 2) (("c" "A") . 2) (("b" "C") . 3) (("c" "B") . 3) (("c" "C") . 4))))
+
 )

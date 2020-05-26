@@ -4,8 +4,6 @@
 (provide (all-defined-out))
 (require srfi/1)
 
-;(define delay_x (lambda (x) (delay x)))
-
 ; return value captured (as value-promise) in given ranking element
 (define value first)
 (define rank second)
@@ -143,14 +141,6 @@
            (min (next-rank resb) ra) ; todo: optimize? 
            (merge* rfa ra (successor-promise resb) (next-rank resb)))))))       
 
-; merge list of ranking functions (not used?)
-;(define (merge-list rf-list)
-;  (if (= (length rf-list) 1)
-;      (car rf-list)
-;      (merge
-;       (car rf-list)
-;       (merge-list (cdr rf-list)))))
-
 ; Join two ranking functions
 (define (join rfa rfb)
   (merge-apply rfa (λ (va) (map-value (λ (b) (list va b)) rfb))))
@@ -244,44 +234,3 @@
          (cdar assoc-list)
          -1
          (from-assoc (cdr assoc-list))))))
-
-; Some sanity checks
-(define (test-eq a b)
-  (when (not (equal? a b)) (error "fail")))
-
-(test-eq (to-assoc
-          (merge*
-           (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 3)))
-           0
-           (from-assoc (list `("A" . 0) `("B" . 2) `("C" . 4)))
-           0))
-         `(("a" . 0) ("A" . 0) ("b" . 1) ("B" . 2) ("c" . 3) ("C" . 4)))
-
-(test-eq (to-assoc
-          (shift 10 (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 3)))))
-         `(("a" . 10) ("b" . 11) ("c" . 13)))
-
-(test-eq (to-assoc
-          (map-value
-           (lambda (x) (list x "x"))
-           (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 3)))))
-         `((("a" "x") . 0) (("b" "x") . 1) (("c" "x") . 3)))
-
-(test-eq (to-assoc
-          (merge-apply
-           (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 3)))
-           (lambda (x) (from-assoc (list (cons x 0) (cons (list x) 1))))))
-         `(("a" . 0) (("a") . 1) ("b" . 1) (("b") . 2) ("c" . 3) (("c") . 4)))
-
-(test-eq (to-assoc
-          (join
-           (from-assoc (list `("a" . 0) `("b" . 1) `("c" . 2)))
-           (from-assoc (list `("A" . 0) `("B" . 1) `("C" . 2)))))
-         `((("a" "A") . 0) (("a" "B") . 1) (("b" "A") . 1) (("a" "C") . 2) (("b" "B") . 2) (("c" "A") . 2) (("b" "C") . 3) (("c" "B") . 3) (("c" "C") . 4)))
-
-;(pr (nrm/exc (nrm/exc 1 2 5) (nrm/exc 10 20) 3))
-;;(to-assoc
-;          (merge-shift
-;           (from-assoc (list `(1 . 0) `(2 . 5)))
-;           (from-assoc (list `(10 . 3) `(20 . 4)))
-;           3))
