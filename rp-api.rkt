@@ -17,7 +17,7 @@
  either-of
  either/or
  observe
- dedup
+ deduplicate
  observe-r
  observe-e
  cut
@@ -124,7 +124,7 @@
 (define (observe pred r)
   (begin
     (unless (one-arg-proc? pred) (raise-argument-error 'observe "predicate" 0 pred r))
-    (mark-as-rf (normalise (filter-ranking pred (delay (autocast r)))))))
+    (mark-as-rf (conditionalise-ranking pred (delay (autocast r))))))
 
 ; forced deduplocation
 (define (deduplicate r [cond #T])
@@ -172,30 +172,33 @@
     (rank-of* (delay (autocast r-exp)))))
 
 ; $ (ranked application)
-(define ($ . r-exps)
+(define (apply-ranked cache r-exps)
   (if (> (length r-exps) 0)
       (if (ranking? (car r-exps))
           ; function argument is ranking over functions (todo: test this, autocast needs delay?)
           (mark-as-rf
            (merge-apply
              (map-value
-              (λ (form) (autocast (apply (car form) (cdr form))))
+              (λ (form) (autocast (apply-c cache (car form) (cdr form))))
               (join-list (map (λ (x) (delay (autocast x))) r-exps)))
              (λ (rf) rf)))
           (if (primitive? (car r-exps))
               ; function argument is primitive (function will not return ranking)
               (mark-as-rf
                (map-value
-                (λ (args) (apply (car r-exps) args))
+                (λ (args) (apply-c cache (car r-exps) args))
                 (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps)))))
-              ; function argument is not primitive (function may return ranking) (todo: test this, autocast needs delay?)
+              ; function argument is not primitive (function may return ranking) 
               (mark-as-rf
                (merge-apply
                 (map-value
-                 (λ (args) (autocast (apply (car r-exps) args)))
+                 (λ (args) (autocast (apply-c cache (car r-exps) args)))
                  (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps))))
                 (λ (rf) rf)))))
       (raise-arity-error '$ (arity-at-least 1))))
+
+(define ($ . r-exps) (apply-ranked #f r-exps))
+(define ($@ . r-exps) (apply-ranked #t r-exps))
 
 ; ranked let
 (define-syntax rlet
@@ -208,7 +211,10 @@
   (syntax-rules ()
     ((rlet* () body) body) ; base case
     ((rlet* ((var r-exp) rest ...) body) ; binding case
-      ($ (λ (var) (rlet* (rest ...) body)) r-exp))))
+     ($ (λ (var) (rlet* (rest ...) body)) r-exp))
+    ((rlet* ((@ var r-exp) rest ...) body) ; binding case
+     ($@ (λ (var) (rlet* (rest ...) body)) r-exp))
+    ))
 
 ; returns true if two ranking functions are equal (disregards ordering of values with equal rank and redundant elements)
 (define (rf-equal? r-exp1 r-exp2)

@@ -8,6 +8,8 @@
 (define value first)
 (define rank second)
 (define next-rank (lambda (x) (if (= (third x) -1) (rank (successor x)) (third x))))
+(define next-rank* third)
+(define next-rank-precomputed (lambda (x) (not (= -1 (next-rank* x)))))
 (define successor-promise fourth)
 (define successor (lambda (x) (force (successor-promise x))))
 
@@ -35,21 +37,37 @@
           (element
            (f (value res))
            (rank res)
-           (next-rank res)
+           (next-rank* res)
            (map-value f (successor-promise res)))))))
 
 ; normalise ranking
 (define (normalise rf [s #f])
   (delay
     (let ((res (force rf)))
+      (cond
+        ([= (rank res) 0] res)
+        ([= (rank res) +inf.0] terminate-element)
+        (else (element
+               (value res)
+               (if s (- (rank res) s) 0)
+               (if (next-rank-precomputed res) (- (next-rank res) (if s s (rank res))) -1)
+               (normalise (successor-promise res)
+                          (if s s (rank res)))))))))
+
+
+; filter on condition
+(define (conditionalise-ranking pred rf [s #f])
+  (delay
+    (let ((res (force rf)))
       (if (infinite? (rank res))
           terminate-element
-          (element
-           (value res)
-           (if s (- (rank res) s) 0)
-           (- (next-rank res) (if s s (rank res)))
-           (normalise (successor-promise res)
-                      (if s s (rank res))))))))
+          (if (pred (value res))
+              (element
+               (value res)
+               (if s (- (rank res) s) 0)
+               -1 ; cannot know next rank here without determining next unfiltered value
+               (conditionalise-ranking pred (successor-promise res) (if s s (rank res))))
+              (force (conditionalise-ranking pred (successor-promise res) s)))))))
 
 ; shift rank
 (define (shift n rf)
@@ -60,23 +78,9 @@
           (element
            (value res)
            (+ (rank res) n)
-           (+ (next-rank res) n)
+           (if (next-rank-precomputed res) (+ (next-rank res) n) -1)
            (shift n (successor-promise res)))))))
 
-; filter on condition
-(define (filter-ranking pred rf)
-  (delay
-    (let ((res (force rf)))
-      (if (infinite? (rank res))
-          terminate-element
-          (if (pred (value res))
-              (element
-               (value res)
-               (rank res)
-               -1
-               (filter-ranking pred (successor-promise res)))
-              (force (filter-ranking pred (successor-promise res))))))))
-              
 ; Only pass through first n elements
 (define (filter-after n rf)
   (if (= n 0)
@@ -109,7 +113,7 @@
         (f res)
         (do-with (successor-promise res) f)))))
 
-; merge two ranking functions
+; merge two ranking functions where the second is shifted up 
 (define (merge-shift rfa rfb rank)
   (merge* rfa
           (if (eq? rfa terminate-promise) +inf.0 0)
@@ -125,21 +129,30 @@
 
 ; merge two ranking functions with ranks known
 (define (merge* rfa ra rfb rb)
-  (if (<= ra rb)
-      (delay
-        (let ((resa (force rfa)))
-          (element
-           (value resa)
-           (rank resa)
-           (min (next-rank resa) rb) ; todo: optimize? can we avoid calling next-rank?
-           (merge* (successor-promise resa) (next-rank resa) rfb rb))))
-      (delay
-        (let ((resb (force rfb)))
-          (element
-           (value resb)
-           (rank resb)
-           (min (next-rank resb) ra) ; todo: optimize? 
-           (merge* rfa ra (successor-promise resb) (next-rank resb)))))))       
+  (cond
+    ([= +inf.0 ra] rfb)
+    ([= +inf.0 rb] rfa)
+    ([<= ra rb]
+     (delay
+       (let ((resa (force rfa)))
+         (element
+          (value resa)
+          (rank resa)
+          (if (next-rank-precomputed resa) (min (next-rank resa) rb) -1)
+          (if (next-rank-precomputed resa)
+              (merge* (successor-promise resa) (next-rank resa) rfb rb)
+              (delay (force (merge* (successor-promise resa) (next-rank resa) rfb rb))))))))
+    (else
+     (delay
+       (let ((resb (force rfb)))
+         (element
+          (value resb)
+          (rank resb)
+          (if (next-rank-precomputed resb) (min (next-rank resb) ra) -1)
+          (if (next-rank-precomputed resb)
+              (merge* rfa ra (successor-promise resb) (next-rank resb))
+              (delay (force (merge* rfa ra (successor-promise resb) (next-rank resb)))))
+          ))))))
 
 ; Join two ranking functions
 (define (join rfa rfb)
@@ -234,3 +247,9 @@
          (cdar assoc-list)
          -1
          (from-assoc (cdr assoc-list))))))
+
+(define apply-c-hash (make-hash))
+(define (apply-c cache f args)
+  (if cache
+      (hash-ref! (hash-ref! apply-c-hash f (make-hash)) args (lambda () (apply f args)))
+      (apply f args)))
