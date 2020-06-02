@@ -34,18 +34,20 @@
  pr-until
  pr-first
  pr
+ deepen-iteratively
 )
 
 ; used as marker for ranking function (only for internal use)
 (define rf-marker `ranking-function)
 
-; autocast: convert typed ranking function to ranking chain
-; and any other value to ranking chain representing single-valued ranking function
+; autocast: if argument is ranking function, then return the ranking function, and
+; if argument is any other value, return ranking function assigning rank 0 to that
+; value and infinity to all other values.
 (define autocast
   (lambda (value)
     (if (ranking? value)
-        (force (cdr value))
-        (element value 0 +inf.0 terminate-promise))))
+        (cdr value)
+        (delay (element value 0 +inf.0 terminate-promise)))))
 
 ; is value a ranking function?
 (define (ranking? value) (and (pair? value) (eq? (car value) rf-marker)))
@@ -96,7 +98,7 @@
        (unless (rank? rank) (raise-argument-error 'nrm/exc "rank (non-negative integer or infinity)" 1 r-exp1 rank r-exp2))
        (mark-as-rf
         (normalise
-         (merge-shift (delay (autocast r-exp1)) (delay (autocast r-exp2)) rank)))))))
+         (merge-shift (autocast r-exp1) (autocast r-exp2) rank)))))))
 
 ; either-of
 (define (either-of lst)
@@ -113,23 +115,23 @@
 (define-syntax either/or
   (syntax-rules ()
     ((either/or) (mark-as-rf terminate-promise))
-    ((either/or r-exp rest ...) (mark-as-rf (merge (delay (autocast r-exp)) (either* rest ...))))))
+    ((either/or r-exp rest ...) (mark-as-rf (merge (autocast r-exp) (either* rest ...))))))
 
 (define-syntax either*
   (syntax-rules ()
     ((either*) terminate-promise)
-    ((either* r-exp rest ...) (merge (delay (autocast r-exp)) (either* rest ...)))))
+    ((either* r-exp rest ...) (merge (autocast r-exp) (either* rest ...)))))
 
 ; observe
-(define (observe pred r)
+(define (observe pred r-exp)
   (begin
-    (unless (one-arg-proc? pred) (raise-argument-error 'observe "predicate" 0 pred r))
-    (mark-as-rf (conditionalise-ranking pred (delay (autocast r))))))
+    (unless (one-arg-proc? pred) (raise-argument-error 'observe "predicate" 0 pred r-exp))
+    (mark-as-rf (conditionalise-ranking pred (autocast r-exp)))))
 
-; forced deduplocation
-(define (deduplicate r [cond #T])
+; deduplicate ranking function
+(define (deduplicate r-exp [cond #T])
   (if cond
-      (mark-as-rf (dedup (delay (autocast r)))) r))
+      (mark-as-rf (dedup (autocast r-exp))) (autocast r-exp)))
 
 ; observe-r (result-oriented conditionalization, also called j-conditionalization)
 (define (observe-r x pred r) 
@@ -151,12 +153,12 @@
 ; cut
 (define (cut rank r-exp)
   (unless (rank? rank) (raise-argument-error 'cut "rank (non-negative integer or infinity)" 0 rank r-exp))
-  (mark-as-rf (up-to-rank rank (delay (autocast r-exp)))))
+  (mark-as-rf (up-to-rank rank (autocast r-exp))))
 
 ; limit
 (define (limit count r-exp)
   (unless (or (exact-nonnegative-integer? count) (infinite? count)) (raise-argument-error 'cut "non-negative integer" 0 rank r-exp))
-  (mark-as-rf (filter-after count (delay (autocast r-exp)))))
+  (mark-as-rf (filter-after count (autocast r-exp))))
 
 ; rank-of
 (define (rank-of pred r-exp)
@@ -169,7 +171,7 @@
                     (if (pred (value res))
                         (rank res)
                         (rank-of* (successor-promise res))))))))
-    (rank-of* (delay (autocast r-exp)))))
+    (rank-of* (autocast r-exp))))
 
 ; $ (ranked application)
 (define (apply-ranked cache r-exps)
@@ -180,20 +182,20 @@
            (merge-apply
              (map-value
               (λ (form) (autocast (apply-c cache (car form) (cdr form))))
-              (join-list (map (λ (x) (delay (autocast x))) r-exps)))
+              (join-list (map (λ (x) (autocast x)) r-exps)))
              (λ (rf) rf)))
           (if (primitive? (car r-exps))
               ; function argument is primitive (function will not return ranking)
               (mark-as-rf
                (map-value
                 (λ (args) (apply-c cache (car r-exps) args))
-                (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps)))))
+                (join-list (map (λ (x) (autocast x)) (cdr r-exps)))))
               ; function argument is not primitive (function may return ranking) 
               (mark-as-rf
                (merge-apply
                 (map-value
                  (λ (args) (autocast (apply-c cache (car r-exps) args)))
-                 (join-list (map (λ (x) (delay (autocast x))) (cdr r-exps))))
+                 (join-list (map (λ (x) (autocast x)) (cdr r-exps))))
                 (λ (rf) rf)))))
       (raise-arity-error '$ (arity-at-least 1))))
 
@@ -222,15 +224,15 @@
 
 ; rf->hash (convert ranking to hash table value->rank)
 (define (rf->hash r-exp)
-  (to-hash (delay (autocast r-exp))))
+  (to-hash (autocast (deduplicate r-exp))))
   
 ; rf->assoc (convert ranking to associative list of (value . rank) pairs)
 (define (rf->assoc r-exp)
-  (to-assoc (dedup (delay (autocast r-exp)))))
+  (to-assoc (autocast (deduplicate r-exp))))
 
 ; convert ranking function to stream of (value . rank) pairs
 (define (rf->stream r-exp)
-  (to-stream (dedup (delay (autocast r-exp)))))
+  (to-stream (autocast (deduplicate r-exp))))
 
 ; Display helper functions
 (define display-header (λ () (begin (display "Rank  Value") (newline) (display "------------") (newline))))
@@ -280,4 +282,9 @@
 ; Print first 10 lowest-ranked values of ranking for given r-expression
 (define (pr r-exp) (pr-first 10 r-exp))
 
-
+(define (deepen-iteratively f args depth)
+  (let ((res (force (autocast (apply f (append args (list depth)))))))
+    (if (= (rank res) +inf.0)
+        (begin (display "iter") (display depth) (newline)
+               (deepen-iteratively f args (+ depth 100)))
+        (mark-as-rf (delay res)))))

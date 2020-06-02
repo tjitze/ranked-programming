@@ -115,17 +115,17 @@
 
 ; merge two ranking functions where the second is shifted up 
 (define (merge-shift rfa rfb rank)
-  (merge* rfa
-          (if (eq? rfa terminate-promise) +inf.0 0)
-          (shift rank rfb)
-          (if (eq? rfa terminate-promise) +inf.0 rank)))
-
+  (cond
+    ([eq? rfa terminate-promise] rfb)
+    ([eq? rfb terminate-promise] rfa)
+    (else (merge* rfa 0 (shift rank rfb) rank))))
+    
 ; merge two ranking functions
 (define (merge rfa rfb)
-  (merge* rfa
-          (if (eq? rfa terminate-promise) +inf.0 0)
-          rfb
-          (if (eq? rfb terminate-promise) +inf.0 0)))
+  (cond
+    ([eq? rfa terminate-promise] rfb)
+    ([eq? rfb terminate-promise] rfa)
+    (else (merge* rfa 0 rfb 0))))
 
 ; merge two ranking functions with ranks known
 (define (merge* rfa ra rfb rb)
@@ -150,8 +150,8 @@
           (rank resb)
           (if (next-rank-precomputed resb) (min (next-rank resb) ra) -1)
           (if (next-rank-precomputed resb)
-              (merge* rfa ra (successor-promise resb) (next-rank resb))
-              (delay (force (merge* rfa ra (successor-promise resb) (next-rank resb)))))
+              (merge*  rfa ra (successor-promise resb) (next-rank resb))
+              (delay (force (merge*  rfa ra (successor-promise resb) (next-rank resb)))))
           ))))))
 
 ; Join two ranking functions
@@ -160,13 +160,12 @@
 
 ; join list of ranking functions
 (define (join-list rf-list)
-  (cond
-           [(empty? rf-list) terminate-promise]
-           [(= (length rf-list) 1) (map-value list (car rf-list))]
-           [(= (length rf-list) 2) (join (first rf-list) (second rf-list))]
-           [else (map-value
-                  (λ (x) (cons (first x) (second x)))
-                  (join (first rf-list) (join-list (cdr rf-list))))]))
+  (cond [(empty? rf-list) terminate-promise]
+        [(= (length rf-list) 1) (map-value list (car rf-list))]
+        [(= (length rf-list) 2) (join (first rf-list) (second rf-list))]
+        [else (map-value
+               (λ (x) (cons (first x) (second x)))
+               (join (first rf-list) (join-list (cdr rf-list))))]))
 
 ; merge-apply:
 ; - rfs is a ranking function
@@ -178,9 +177,13 @@
     (let ((res (force rfs)))
       (if (infinite? (rank res))
           terminate-element
-          (force (merge*
-           (shift (rank res) (f (value res))) (rank res)
-           (merge-apply (successor-promise res) f) (next-rank res)))))))
+          (let ((fvr (f (value res)))) ; todo: what if fvr is empty ranking?
+            (force
+             (merge*
+              (shift (rank res) fvr)
+              (rank res)
+              (merge-apply (successor-promise res) f)
+              (next-rank res))))))))
 
 ; check ranking correctness
 (define (check-correctness rf [c -1])
