@@ -43,11 +43,13 @@
 ; autocast: if argument is ranking function, then return the ranking function, and
 ; if argument is any other value, return ranking function assigning rank 0 to that
 ; value and infinity to all other values.
-(define autocast
-  (lambda (value)
-    (if (ranking? value)
-        (cdr value)
-        (delay (element value 0 +inf.0 terminate-promise)))))
+(define-syntax autocast 
+  (syntax-rules ()
+    ((autocast value)
+     (delay
+       (if (ranking? value)
+           (force (cdr value))
+           (element value 0 +inf.0 terminate-promise))))))
 
 ; is value a ranking function?
 (define (ranking? value) (and (pair? value) (eq? (car value) rf-marker)))
@@ -177,25 +179,25 @@
 (define (apply-ranked cache r-exps)
   (if (> (length r-exps) 0)
       (if (ranking? (car r-exps))
-          ; function argument is ranking over functions (todo: test this, autocast needs delay?)
+          ; function argument is ranking over functions
           (mark-as-rf
            (merge-apply
              (map-value
               (λ (form) (autocast (apply-c cache (car form) (cdr form))))
-              (join-list (map (λ (x) (autocast x)) r-exps)))
+              (join-list (map (lambda (x) (autocast x)) r-exps)))
              (λ (rf) rf)))
           (if (primitive? (car r-exps))
               ; function argument is primitive (function will not return ranking)
               (mark-as-rf
                (map-value
                 (λ (args) (apply-c cache (car r-exps) args))
-                (join-list (map (λ (x) (autocast x)) (cdr r-exps)))))
+                (join-list (map (lambda (x) (autocast x)) (cdr r-exps)))))
               ; function argument is not primitive (function may return ranking) 
               (mark-as-rf
                (merge-apply
                 (map-value
                  (λ (args) (autocast (apply-c cache (car r-exps) args)))
-                 (join-list (map (λ (x) (autocast x)) (cdr r-exps))))
+                 (join-list (map (lambda (x) (autocast x)) (cdr r-exps))))
                 (λ (rf) rf)))))
       (raise-arity-error '$ (arity-at-least 1))))
 

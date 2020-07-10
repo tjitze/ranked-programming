@@ -23,6 +23,14 @@
                     (construct-ranking (1 . 0) (2 . 1) (3 . 2)))
    (check-rf-equal? (nrm/exc (nrm/exc 10 20 5) 2 1)
                     (construct-ranking (10 . 0) (2 . 1) (20 . 5))))
+
+  ; This is to ensure that recursion in exceptional case does not lead to non-termination
+  (test-case
+   "nrm/exc infinite recursion"
+   (check-rf-equal? (letrec ([fun (lambda (x)
+                                    (nrm/exc x (fun (* 2 x))))])
+                      (limit 4 (fun 1)))
+                    (construct-ranking (1 . 0) (2 . 1) (4 . 2) (8 . 3))))
   
   (test-case
    "either-of"
