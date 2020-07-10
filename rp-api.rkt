@@ -11,6 +11,7 @@
  ranking/c
  rank/c
  construct-ranking
+ for-ranking
  nrm/exc
  !
  failure
@@ -91,7 +92,12 @@
     (mark-as-rf
      (delay (element value 0 +inf.0 terminate-promise)))))
 
-; nrm (alternative syntax)
+; for-ranking
+(define-syntax for-ranking
+  (syntax-rules ()
+    ((for-ranking r exp) ($ (lambda (r) exp) r))))
+           
+; nrm/exc
 (define-syntax nrm/exc
   (syntax-rules (nrm exc)
     ((nrm/exc r-exp1 r-exp2) (nrm/exc r-exp1 r-exp2 1))
