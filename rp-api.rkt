@@ -257,11 +257,11 @@
           (display-failure)
           (begin (display-header) (do-with (delay first-res) display-element) (display-done))))))
 
-; Print ranking for given r-expression up to given rank (todo: test this: autocast needs delay?)
+; Print ranking for given r-expression up to given rank
 (define (pr-until r r-exp)
   (unless (rank? r) (raise-argument-error 'observe-j "rank (non-negative integer or infinity)" 0 rank r-exp))
   (unless (void? r-exp)
-    (let ((first-res (force (autocast r-exp))))
+    (let ((first-res (force (autocast (deduplicate r-exp)))))
       (if (infinite? (rank first-res))
           (display-failure)
           (begin (display-header) (pr-until* r first-res))))))
@@ -273,10 +273,10 @@
           (display-more)
           (begin (display-element res) (pr-until* r (successor res))))))
 
-; Print first n lowest-ranked values of ranking for given r-expression (todo: test this: autocast needs delay?)
+; Print first n lowest-ranked values of ranking for given r-expression
 (define (pr-first n r-exp)
   (unless (void? r-exp)
-    (let ((first-res (force (autocast r-exp))))
+    (let ((first-res (force (autocast (deduplicate r-exp)))))
       (if (infinite? (rank first-res))
           (display-failure)
           (begin (display-header) (pr-first* n first-res))))))
