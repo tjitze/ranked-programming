@@ -133,6 +133,8 @@ We list the differences and additions here:
      @item{@racket[observe-r]/@racket[observe-e] Generalised @racket[observe] variants.}
      @item{@racket[cut] Restrict ranking up to a given rank.}
      @item{@racket[limit] Restrict ranking up to a given number of values.}
+     @item{@racket[deduplicate] Deduplicate ranking function.}
+     @item{@racket[for-ranking] Apply expression to ranking.}
      @item{@racket[rank?]/@racket[ranking?] Type checking for ranks and rankings.}
      @item{@racket[rank/c]/@racket[ranking/c] Type contracts for ranks and rankings.}
    ]
@@ -330,6 +332,10 @@ Now we add uncertainty about the operation: we normally add but exceptionally mu
 ]
 }
 
+@defform[(for-ranking var body)]{
+TODO 
+}
+
 @defform[(rlet ([var_1 k_1] ... [var_n k_n]) body)]{
 
 The @racket[rlet] expression generalises Racket's standard @racket[let] expression.
@@ -339,9 +345,8 @@ The difference with the standard @racket[let] expression is that the @racket[k_1
 
 The precise rule that is used to construct the ranking returned by the expression @racket[(rlet ([var_1 k_1] ... [var_n k_n]) body)] is as follows:
 Suppose that the rankings @racket[k_1 ... k_n] assign ranks @racket[r_1 ... r_n] to the values @racket[v_1 ... v_n].
-Furthermore, suppose that @racket[body], with occurrences of @racket[var_1 ... var_n] replaced with @racket[v_1 ... v_n], returns @racket[v].
-Then @racket[v] is returned with rank @racket[r_1]+...+@racket[r_n],
-  unless there is another sequence of values that yields a lower rank for @racket[v] using the same rule.
+Furthermore, suppose that @racket[body] returns @racket[v], if evaluated in the environment where the variables @racket[var_1 ... var_n] are bound to the values @racket[v_1 ... v_n],
+Then @racket[v] is returned with rank @racket[r_1]+...+@racket[r_n], unless there is another sequence of values that yields a lower rank for @racket[v] using the same rule.
 
 The @racket[rlet] expression provides a convenient way to construct a joint ranking over a set of independent variables.
 An example: let @racket[b] and @racket[p] be boolean variables standing for beer and peanuts.
@@ -360,8 +365,9 @@ Furthermore, we normally eat peanuts, and thus @racket[b] becomes @racket[(nrm/e
 
 One may wish to express dependencies between variables.
 In the example above, we might wish to express that our peanut consumption depends on whether we drink beer.
-However, this cannot be done, since the argument for @racket[p] cannot refer to the value of @racket[b].
-The @racket[rlet*] expression extends the @racket[rlet] expression and provides a solution for such cases.
+However, this cannot be done with an @racket[rlet] expression, where the argument for @racket[p] cannot refer
+to the value of @racket[b]. The @racket[rlet*] expression extends the @racket[rlet] expression and provides a
+solution for such cases.
 
 @defform[(rlet* ([var_1 k_1] ... [var_n k_n]) body)]{
 
@@ -458,28 +464,15 @@ Returns the ranking @racket[k] restricted to values with a rank of at most @rack
 Returns the ranking @racket[k] restricted to the @racket[count] lowest-ranked values.
 }
 
-@defproc[(set-global-dedup [enabled (boolean?)]) void?]{
-Sets the global deduplication setting. If enabled, duplicate higher-ranked values are filtered
-out of any ranking that is computed. If disabled, duplicates may occur (e.g. a ranking where some
-value x occurs more than once, where the higher-ranked occurrence is redundant). By default, this
-setting is enabled. Disabling it will lead to less memory consumption, since duplicate detection
-requires memorisation of values. In some cases, disabling deduplication can speed up inference. In
-other cases, disabling deduplication slows down inference, due to redundant computations. Which is
-better depends on the implementation.
+@defproc[(deduplicate [k (ranking?)]) ranking?]{
+Deduplicates ranking, meaning that for values which appear more than once in a ranking,
+all occurrences except for the lowest-ranked one, are removed. Any expression that returns
+a ranking can be deduplicated without changing the meaning. When dealing with large ranking
+functions it is advised to place deduplicate expressions at strategic places, such as around
+every recursive call. They should be used with care, however, since every call to deduplicate
+creates a hash set which stores all values, which is used to find duplicate values.
 
-Without deduplication:
-@examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
-                             '(ranked-programming)))
-(set-global-dedup #F)
-(pr (nrm/exc "a" "a" 5))
-]
-
-With deduplication:
-@examples[ #:label #f #:eval ((make-eval-factory #:lang 'racket/base
-                             '(ranked-programming)))
-(set-global-dedup #T)
-(pr (nrm/exc "a" "a" 5))
-]}
+Rankings are automatically deduplicated before they are printed using @racket[pr], @racket[pr-all], and so on.}
 
 @defproc[(rank? [x (any/c)]) boolean?]{
 Returns @racket[#t] if @racket[x] is a rank (a non-negative integer or infinity) and @racket[#f] otherwise.
